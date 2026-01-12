@@ -2,7 +2,7 @@ import { Context, h, Logger } from 'koishi'
 import { BaseModule, ModuleMeta } from './base.module'
 import { DataManager } from '../data'
 import { Config } from '../../types'
-import { executeCommand, parseTimeString } from '../../utils'
+import { executeCommand } from '../../utils'
 
 const logger = new Logger('grouphelper:report')
 
@@ -229,8 +229,16 @@ export class ReportModule extends BaseModule {
 
   /**
    * 获取群配置
+   * 优先使用群组配置文件中的 report 设置，如果没有则回退到全局设置中的 guildConfigs
    */
   private getGuildConfig(guildId: string) {
+    // 优先从群组配置文件获取
+    const groupConfig = this.getGroupConfig(guildId)
+    if (groupConfig?.report) {
+      return groupConfig.report
+    }
+
+    // 回退到全局设置中的 guildConfigs
     const globalConfig = this.config.report
     if (!globalConfig?.guildConfigs || !globalConfig.guildConfigs[guildId]) {
       return null
@@ -492,10 +500,11 @@ export class ReportModule extends BaseModule {
               expireTime: Date.now() + duration
             }
 
-            const reason = violationInfo.reporterPenalty.reason || '滥用举报功能'
-            await this.logCommand(session, 'report-banned', session.userId, `AI判定: ${reason}，限制${violationInfo.reporterPenalty.duration}分钟`)
+            const penaltyReason = violationInfo.reporterPenalty.reason || '滥用举报功能'
+            await this.logCommand(session, 'report-banned', session.userId, `AI判定: ${penaltyReason}，限制${violationInfo.reporterPenalty.duration}分钟`)
 
-            return h.quote(session.messageId) + result + `\n您因${reason}，已被暂时限制举报功能${violationInfo.reporterPenalty.duration}分钟。`
+            // 显示 AI 判断理由和限制原因
+            return h.quote(session.messageId) + result + `\nAI判断理由：${violationInfo.reason}\n您因${penaltyReason}，已被暂时限制举报功能${violationInfo.reporterPenalty.duration}分钟。`
           }
 
           return h.quote(session.messageId) + result
@@ -657,21 +666,22 @@ export class ReportModule extends BaseModule {
     verbose = false,
     guildConfig: any = null
   ): Promise<string> {
-    if (!session.user) {
-      session.user = { authority: 5 }
-    }
+    // 临时提权，使用通配符权限执行操作
+    const originalUser = session.user
+    session.user = { ...originalUser, authority: Infinity, permissions: ['*'] }
 
-    if (violation.level === ViolationLevel.NONE) {
-      return verbose
-        ? `AI判断结果：该消息未违规\n理由：${violation.reason}`
-        : '该消息未被判定为违规内容。'
-    }
-
-    let result = ''
     const bot = session.bot
     const guildId = session.guildId
 
     try {
+      if (violation.level === ViolationLevel.NONE) {
+        return verbose
+          ? `AI判断结果：该消息未违规\n理由：${violation.reason}`
+          : '该消息未被判定为违规内容。'
+      }
+
+      let result = ''
+
       const shouldAutoProcess = guildConfig
         ? guildConfig.autoProcess
         : this.config.report?.autoProcess
@@ -688,68 +698,9 @@ export class ReportModule extends BaseModule {
       const actions = violation.action || []
       const actionResults: string[] = []
 
-      // 处理 ban + warn 组合
-      const banAction = actions.find(a => a.type === 'ban')
-      const warnAction = actions.find(a => a.type === 'warn')
-
-      if (banAction && warnAction && banAction.time && warnAction.count) {
-        const reportBanTime = banAction.time * 1000
-
-        try {
-          // WarnRecord 新结构: { [guildId]: { [userId]: { count, timestamp } } }
-          const guildWarns = this.data.warns.get(session.guildId) || {}
-          
-          if (!guildWarns[userId]) {
-            guildWarns[userId] = { count: 0, timestamp: Date.now() }
-          }
-          
-          const currentWarns = guildWarns[userId].count
-          const newWarnCount = currentWarns + warnAction.count
-
-          if (newWarnCount >= this.config.warnLimit) {
-            const expression = this.config.banTimes.expression.replace(/{t}/g, String(newWarnCount))
-            const warnBanTime = parseTimeString(expression)
-
-            if (warnBanTime > reportBanTime) {
-              await this.warnUser(session, userId, warnAction.count)
-              actionResults.push(`警告${warnAction.count}次(触发自动禁言${Math.floor(warnBanTime/1000)}秒)`)
-
-              for (const action of actions) {
-                if (action.type !== 'ban' && action.type !== 'warn') {
-                  await this.executeOtherAction(action, session, userId, actionResults)
-                }
-              }
-            } else {
-              await this.banUserBySeconds(session, userId, banAction.time)
-              actionResults.push(`禁言${banAction.time}秒`)
-
-              guildWarns[userId].count = newWarnCount
-              guildWarns[userId].timestamp = Date.now()
-              // @ts-ignore
-              this.data.warns.set(session.guildId, guildWarns)
-              this.data.warns.flush()
-              actionResults.push(`警告${warnAction.count}次(已记录，未触发自动禁言)`)
-
-              for (const action of actions) {
-                if (action.type !== 'ban' && action.type !== 'warn') {
-                  await this.executeOtherAction(action, session, userId, actionResults)
-                }
-              }
-            }
-          } else {
-            for (const action of actions) {
-              await this.executeAction(action, session, userId, actionResults)
-            }
-          }
-        } catch (e) {
-          for (const action of actions) {
-            await this.executeAction(action, session, userId, actionResults)
-          }
-        }
-      } else {
-        for (const action of actions) {
-          await this.executeAction(action, session, userId, actionResults)
-        }
+      // 简化处理：直接执行所有操作
+      for (const action of actions) {
+        await this.executeAction(action, session, userId, actionResults)
       }
 
       if (actions.length === 0) {
@@ -802,6 +753,9 @@ export class ReportModule extends BaseModule {
       }
 
       return `AI已判定该消息${this.getViolationLevelText(violation.level)}违规，但自动处理失败：${e.message}\n请联系管理员手动处理。`
+    } finally {
+      // 恢复原始权限
+      session.user = originalUser
     }
   }
 
@@ -839,31 +793,6 @@ export class ReportModule extends BaseModule {
           }
           break
 
-        case 'kick':
-          await this.kickUser(session, userId, false)
-          actionResults.push('踢出群聊')
-          break
-
-        case 'kick_blacklist':
-          await this.kickUser(session, userId, true)
-          actionResults.push('踢出群聊并加入黑名单')
-          break
-
-        default:
-          logger.warn(`未知的操作类型: ${action.type}`)
-      }
-    } catch (e) {
-      logger.error(`执行操作失败: ${action.type}`, e)
-      actionResults.push(`${action.type}操作失败`)
-    }
-  }
-
-  /**
-   * 执行其他操作（非 ban/warn）
-   */
-  private async executeOtherAction(action: ViolationAction, session: any, userId: string, actionResults: string[]): Promise<void> {
-    try {
-      switch (action.type) {
         case 'kick':
           await this.kickUser(session, userId, false)
           actionResults.push('踢出群聊')

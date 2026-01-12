@@ -55,6 +55,8 @@ export interface GroupConfig {
   }
   openai?: {
     enabled: boolean
+    chatEnabled?: boolean
+    translateEnabled?: boolean
     systemPrompt?: string
     translatePrompt?: string
   }
@@ -62,6 +64,12 @@ export interface GroupConfig {
     enabled: boolean
     retentionDays?: number
     maxRecordsPerUser?: number
+  }
+  report?: {
+    enabled: boolean
+    autoProcess?: boolean
+    includeContext?: boolean
+    contextSize?: number
   }
 }
 

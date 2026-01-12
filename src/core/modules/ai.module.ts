@@ -249,6 +249,11 @@ export class AIModule extends BaseModule {
           return '抱歉，当前群聊已禁用AI功能。'
         }
 
+        // 检查是否禁用了对话功能
+        if (groupConfig?.openai?.chatEnabled === false) {
+          return '抱歉，当前群聊已禁用AI对话功能。'
+        }
+
         if (groupConfig?.openai?.systemPrompt) {
           systemPrompt = groupConfig.openai.systemPrompt
         }
@@ -319,6 +324,11 @@ export class AIModule extends BaseModule {
 
         if (groupConfig?.openai?.enabled === false) {
           return '抱歉，当前群聊已禁用AI功能。'
+        }
+
+        // 检查是否禁用了翻译功能
+        if (groupConfig?.openai?.translateEnabled === false) {
+          return '抱歉，当前群聊已禁用AI翻译功能。'
         }
 
         if (groupConfig?.openai?.translatePrompt) {

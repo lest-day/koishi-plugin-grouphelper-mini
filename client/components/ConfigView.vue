@@ -94,6 +94,10 @@
               <span class="dot"></span>
               AI助手
             </div>
+            <div class="feature-item" :class="{ active: config.report?.enabled }">
+              <span class="dot"></span>
+              举报功能
+            </div>
           </div>
           
           <div class="stats-row">
@@ -310,7 +314,6 @@
               <div class="plugin-card">
                 <div class="plugin-header" @click="togglePlugin('antiRecall')">
                   <div class="plugin-title">
-                    <k-icon name="eye" />
                     <span>防撤回</span>
                   </div>
                   <div class="plugin-status">
@@ -337,7 +340,6 @@
               <div class="plugin-card" style="margin-top: 1rem;">
                 <div class="plugin-header" @click="togglePlugin('repeat')">
                   <div class="plugin-title">
-                    <k-icon name="repeat" />
                     <span>复读检测</span>
                   </div>
                   <div class="plugin-status">
@@ -389,7 +391,7 @@
                 <div class="plugin-header" @click="togglePlugin('banme')">
                   <div class="plugin-title">
                     <k-icon name="slash" />
-                    <span>Banme</span>
+                    <span>自我禁言</span>
                   </div>
                   <div class="plugin-status">
                     <label class="toggle-switch" @click.stop>
@@ -469,11 +471,26 @@
                 </div>
                 <div class="plugin-body" v-show="expandedPlugins['ai']">
                   <div class="form-group">
+                    <label>启用对话</label>
+                    <label class="toggle-switch">
+                      <input type="checkbox" v-model="editingConfig.openai.chatEnabled" />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label>启用翻译</label>
+                    <label class="toggle-switch">
+                      <input type="checkbox" v-model="editingConfig.openai.translateEnabled" />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="form-group">
                     <label>系统提示词</label>
                     <textarea
                       v-model="editingConfig.openai.systemPrompt"
                       rows="3"
                       class="form-textarea"
+                      placeholder="留空使用全局设置"
                     ></textarea>
                   </div>
                    <div class="form-group">
@@ -482,7 +499,45 @@
                       v-model="editingConfig.openai.translatePrompt"
                       rows="3"
                       class="form-textarea"
+                      placeholder="留空使用全局设置"
                     ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 举报功能 -->
+              <div class="plugin-card" style="margin-top: 1rem;">
+                <div class="plugin-header" @click="togglePlugin('report')">
+                  <div class="plugin-title">
+                    <k-icon name="flag" />
+                    <span>举报功能</span>
+                  </div>
+                  <div class="plugin-status">
+                    <label class="toggle-switch" @click.stop>
+                      <input type="checkbox" v-model="editingConfig.report.enabled" />
+                      <span class="slider"></span>
+                    </label>
+                    <k-icon :name="expandedPlugins['report'] ? 'chevron-up' : 'chevron-down'" />
+                  </div>
+                </div>
+                <div class="plugin-body" v-show="expandedPlugins['report']">
+                  <div class="form-group">
+                    <label>自动处理</label>
+                    <label class="toggle-switch">
+                      <input type="checkbox" v-model="editingConfig.report.autoProcess" />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label>包含上下文</label>
+                    <label class="toggle-switch">
+                      <input type="checkbox" v-model="editingConfig.report.includeContext" />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="form-group" v-if="editingConfig.report.includeContext">
+                    <label>上下文条数</label>
+                    <el-input-number v-model="editingConfig.report.contextSize" :min="1" :max="50" style="width: 100%" />
                   </div>
                 </div>
               </div>
@@ -625,7 +680,8 @@ const editConfig = (guildId: string) => {
     enabled: true, baseMin: 1, baseMax: 30, growthRate: 30,
     jackpot: { enabled: true, baseProb: 0.006, softPity: 73, hardPity: 89, upDuration: '24h', loseDuration: '12h' }
   }
-  if (!config.openai) config.openai = { enabled: true }
+  if (!config.openai) config.openai = { enabled: true, chatEnabled: true, translateEnabled: true }
+  if (!config.report) config.report = { enabled: true, autoProcess: true, includeContext: false, contextSize: 10 }
 
   editingConfig.value = config
   editingApprovalKeywords.value = (config.approvalKeywords || []).join(', ')
