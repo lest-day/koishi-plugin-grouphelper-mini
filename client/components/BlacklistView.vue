@@ -3,14 +3,14 @@
     <div class="view-header">
       <h2 class="view-title">黑名单</h2>
       <div class="header-actions">
-        <k-button @click="showAddDialog = true">
-          <template #icon><k-icon name="user-plus" /></template>
-          添加
-        </k-button>
-        <k-button type="primary" @click="refreshBlacklist">
-          <template #icon><k-icon name="refresh-cw" /></template>
+        <button class="btn btn-secondary" @click="refreshBlacklist" title="刷新列表" :disabled="loading">
+          <k-icon name="refresh-cw" :class="{ 'spin': loading }" />
           刷新
-        </k-button>
+        </button>
+        <button class="btn btn-primary" @click="showAddDialog = true">
+          <k-icon name="user-plus" />
+          添加用户
+        </button>
       </div>
     </div>
 
@@ -162,6 +162,9 @@ onMounted(() => {
 <style scoped>
 /* ========== 使用 Koishi 全局 CSS 变量 ========== */
 .blacklist-view {
+  --radius: 6px;
+  --border: 1px solid var(--k-color-divider);
+
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -193,34 +196,42 @@ onMounted(() => {
 }
 
 /* Header Buttons Override */
-.header-actions :deep(.k-button) {
+.btn {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.75rem;
-  padding: 0.375rem 0.625rem;
-  border-radius: 4px;
-  border: 1px solid var(--k-color-divider);
-  background: var(--bg3);
-  color: var(--fg2);
   font-weight: 500;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease;
+  user-select: none;
+  border: var(--border);
+  line-height: 1;
 }
 
-.header-actions :deep(.k-button:hover) {
-  background: var(--k-card-bg);
+.btn-secondary {
+  background: var(--bg3);
+  color: var(--fg2);
+}
+
+.btn-secondary:hover {
+  background: var(--bg3);
   border-color: var(--k-color-border);
   color: var(--fg1);
 }
 
-.header-actions :deep(.k-button.primary),
-.header-actions :deep(.k-button[type="primary"]) {
+.btn-primary {
   background: var(--k-color-primary-fade);
-  border-color: var(--k-color-primary-tint);
   color: var(--k-color-primary);
+  border-color: rgba(116, 89, 255, 0.2);
 }
 
-.header-actions :deep(.k-button.primary:hover),
-.header-actions :deep(.k-button[type="primary"]:hover) {
-  background: rgba(116, 89, 255, 0.25);
-  border-color: rgba(116, 89, 255, 0.5);
+.btn-primary:hover {
+  background: rgba(116, 89, 255, 0.18);
+  border-color: rgba(116, 89, 255, 0.35);
+  color: var(--k-color-primary);
 }
 
 .header-actions :deep(.k-icon) {
@@ -272,18 +283,18 @@ onMounted(() => {
 .blacklist-table {
   background: var(--k-card-bg);
   border: 1px solid var(--k-color-border);
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
 .table-header {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 200px 120px;
   gap: 1rem;
-  padding: 0.625rem 1rem;
+  padding: 0.75rem 1rem;
   background: var(--bg1);
   border-bottom: 1px solid var(--k-color-border);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--fg3);
   text-transform: uppercase;
@@ -292,9 +303,9 @@ onMounted(() => {
 
 .table-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 200px 120px;
   gap: 1rem;
-  padding: 0.625rem 1rem;
+  padding: 0.75rem 1rem;
   align-items: center;
   border-bottom: 1px solid var(--k-color-divider);
   transition: background-color 0.15s ease;
@@ -319,13 +330,18 @@ onMounted(() => {
 
 .user-icon {
   color: var(--k-color-danger);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .col-time {
   color: var(--fg3);
   font-size: 0.75rem;
   font-family: var(--font-family-code);
+}
+
+.col-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* Row Buttons Override */
@@ -347,6 +363,19 @@ onMounted(() => {
 
 .col-actions :deep(.k-icon) {
   font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 1fr 80px;
+  }
+  .col-time {
+    display: none;
+  }
+  .col-actions :deep(.k-button) span {
+    display: none; /* 小屏幕隐藏按钮文字 */
+  }
 }
 
 /* Dialog */

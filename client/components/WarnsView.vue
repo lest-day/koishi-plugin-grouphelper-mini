@@ -9,18 +9,16 @@
           <el-switch v-model="fetchNames" @change="refreshWarns" size="small" />
         </div>
         <div class="btn-group">
-          <k-button @click="showAddDialog = true">
-            <template #icon><k-icon name="plus" /></template>
-            添加
-          </k-button>
-          <k-button @click="reloadWarns" :loading="reloading" title="从文件重新加载">
-            <template #icon><k-icon name="database" /></template>
+          <button class="btn btn-secondary" @click="reloadWarns" :disabled="reloading" title="从文件重新加载">
+            <k-icon name="loader" class="spin" v-if="reloading" />
             重载
-          </k-button>
-          <k-button type="primary" @click="refreshWarns">
-            <template #icon><k-icon name="refresh-cw" /></template>
+          </button>
+          <button class="btn btn-secondary" @click="refreshWarns" title="刷新列表">
             刷新
-          </k-button>
+          </button>
+          <button class="btn btn-primary" @click="showAddDialog = true">
+            添加警告
+          </button>
         </div>
       </div>
     </div>
@@ -121,8 +119,9 @@
                   controls-position="right"
                   @change="(val) => updateWarn(item, val)"
                 />
-                <k-button size="small" type="danger" @click="updateWarn(item, 0)" title="清除">
+                <k-button size="small" type="danger" @click="updateWarn(item, 0)" title="清除警告">
                   <template #icon><k-icon name="trash-2" /></template>
+                  清除
                 </k-button>
               </div>
             </div>
@@ -324,6 +323,9 @@ onMounted(() => {
    ============================================ */
 
 .warns-view {
+  --radius: 6px;
+  --border: 1px solid var(--k-color-divider);
+
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -378,34 +380,42 @@ onMounted(() => {
 }
 
 /* Header Buttons Override */
-.header-actions :deep(.k-button) {
+.btn {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.75rem;
-  padding: 0.375rem 0.625rem;
-  border-radius: 6px;
-  border: 1px solid var(--k-color-divider);
-  background: var(--bg3);
-  color: var(--fg2);
   font-weight: 500;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease;
+  user-select: none;
+  border: var(--border);
+  line-height: 1;
 }
 
-.header-actions :deep(.k-button:hover) {
-  background: var(--bg2);
+.btn-secondary {
+  background: var(--bg3);
+  color: var(--fg2);
+}
+
+.btn-secondary:hover {
+  background: var(--bg3);
   border-color: var(--k-color-border);
   color: var(--fg1);
 }
 
-.header-actions :deep(.k-button.primary),
-.header-actions :deep(.k-button[type="primary"]) {
+.btn-primary {
   background: var(--k-color-primary-fade);
-  border-color: var(--k-color-primary-tint);
   color: var(--k-color-primary);
+  border-color: rgba(116, 89, 255, 0.2);
 }
 
-.header-actions :deep(.k-button.primary:hover),
-.header-actions :deep(.k-button[type="primary"]:hover) {
-  background: rgba(116, 89, 255, 0.25);
-  border-color: rgba(116, 89, 255, 0.5);
+.btn-primary:hover {
+  background: rgba(116, 89, 255, 0.18);
+  border-color: rgba(116, 89, 255, 0.35);
+  color: var(--k-color-primary);
 }
 
 .header-actions :deep(.k-icon) {
@@ -622,9 +632,10 @@ onMounted(() => {
 }
 
 .list-header {
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
+  display: grid;
+  grid-template-columns: 240px 1fr 180px;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
   font-size: 11px;
   font-weight: 600;
   color: var(--fg3);
@@ -634,27 +645,17 @@ onMounted(() => {
   background: var(--bg1);
   position: sticky;
   top: 0;
-}
-
-.col-user {
-  width: 220px;
-}
-
-.col-time {
-  flex: 1;
-}
-
-.col-action {
-  width: 160px;
-  text-align: right;
+  z-index: 10;
 }
 
 .user-row {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: 240px 1fr 180px;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--k-color-divider);
   transition: background-color 0.15s ease;
+  align-items: center;
 }
 
 .user-row:hover {
@@ -665,7 +666,36 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 220px;
+  overflow: hidden;
+}
+
+.col-action {
+  text-align: right;
+}
+
+.warn-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .list-header,
+  .user-row {
+    grid-template-columns: 1fr 120px 140px;
+  }
+}
+
+@media (max-width: 600px) {
+  .list-header,
+  .user-row {
+    grid-template-columns: 1fr 140px;
+  }
+  .col-time,
+  .warn-time {
+    display: none;
+  }
 }
 
 .user-avatar-wrap {

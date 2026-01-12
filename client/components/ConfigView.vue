@@ -14,7 +14,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <div class="toggle-wrapper">
+        <div class="toggle-wrapper" title="自动获取群名称和头像">
           <label>解析群名</label>
           <el-switch v-model="fetchNames" @change="refreshConfigs" />
         </div>
@@ -22,23 +22,28 @@
         <div class="view-toggle">
           <button class="view-btn" :class="{ active: viewMode === 'grid' }" @click="viewMode = 'grid'" title="卡片视图">
             <k-icon name="grid" />
+            <span>卡片</span>
           </button>
           <button class="view-btn" :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'" title="列表视图">
             <k-icon name="list" />
+            <span>列表</span>
           </button>
         </div>
-        <k-button @click="showCreateDialog = true">
-          <template #icon><k-icon name="plus" /></template>
-          新建配置
-        </k-button>
-        <k-button @click="reloadConfigs" :loading="reloading" title="从文件重新加载配置数据">
-          <template #icon><k-icon name="database" /></template>
+
+        <div class="divider-vertical"></div>
+
+        <button class="btn btn-secondary" @click="reloadConfigs" :disabled="reloading" title="从文件重新加载配置数据">
+          <k-icon name="loader" class="spin" v-if="reloading" />
           重载
-        </k-button>
-        <k-button type="primary" @click="refreshConfigs">
-          <template #icon><k-icon name="refresh-cw" /></template>
+        </button>
+        <button class="btn btn-secondary" @click="refreshConfigs" title="刷新列表">
+          <k-icon name="refresh-cw" />
           刷新
-        </k-button>
+        </button>
+        <button class="btn btn-primary" @click="showCreateDialog = true">
+          <k-icon name="plus" />
+          新建配置
+        </button>
       </div>
     </div>
 
@@ -59,9 +64,9 @@
       <template v-if="viewMode === 'list'">
         <div class="list-table">
           <div class="list-header">
-            <span class="col-guild">群组</span>
-            <span class="col-features">功能状态</span>
-            <span class="col-stats">配置统计</span>
+            <span class="col-guild">群组信息</span>
+            <span class="col-features">功能开关</span>
+            <span class="col-stats">统计</span>
             <span class="col-actions">操作</span>
           </div>
           <div
@@ -84,27 +89,32 @@
               </div>
             </div>
             <div class="col-features">
-              <span class="badge-sm" :class="{ active: config.welcomeEnabled }" title="欢迎">迎</span>
-              <span class="badge-sm" :class="{ active: config.goodbyeEnabled }" title="欢送">送</span>
+              <span class="badge-sm" :class="{ active: config.welcomeEnabled }" title="入群欢迎">迎</span>
+              <span class="badge-sm" :class="{ active: config.goodbyeEnabled }" title="退群欢送">送</span>
               <span class="badge-sm" :class="{ active: config.antiRecall?.enabled }" title="防撤回">撤</span>
-              <span class="badge-sm" :class="{ active: config.antiRepeat?.enabled }" title="复读">复</span>
-              <span class="badge-sm" :class="{ active: config.openai?.enabled }" title="AI">AI</span>
-              <span class="badge-sm" :class="{ active: config.report?.enabled }" title="举报">报</span>
+              <span class="badge-sm" :class="{ active: config.antiRepeat?.enabled }" title="复读检测">复</span>
+              <span class="badge-sm" :class="{ active: config.dice?.enabled }" title="掷骰子">骰</span>
+              <span class="badge-sm" :class="{ active: config.banme?.enabled }" title="自我禁言">禁</span>
+              <span class="badge-sm" :class="{ active: config.openai?.enabled }" title="AI助手">AI</span>
+              <span class="badge-sm" :class="{ active: config.report?.enabled }" title="举报功能">报</span>
             </div>
             <div class="col-stats">
-              <span v-if="config.approvalKeywords?.length"><b>{{ config.approvalKeywords.length }}</b> 入群词</span>
-              <span v-if="config.keywords?.length"><b>{{ config.keywords.length }}</b> 禁言词</span>
+              <span v-if="config.approvalKeywords?.length" title="入群验证词"><b>{{ config.approvalKeywords.length }}</b> 验证</span>
+              <span v-if="config.keywords?.length" title="违规词"><b>{{ config.keywords.length }}</b> 违规</span>
               <span v-if="!config.approvalKeywords?.length && !config.keywords?.length" class="muted">-</span>
             </div>
             <div class="col-actions" @click.stop>
               <button class="action-btn" @click="copyGuildId(guildId as string)" title="复制群号">
                 <k-icon name="copy" />
+                <span>复制</span>
               </button>
-              <button class="action-btn" @click="editConfig(guildId as string)" title="编辑">
+              <button class="action-btn" @click="editConfig(guildId as string)" title="编辑配置">
                 <k-icon name="edit-2" />
+                <span>编辑</span>
               </button>
-              <button class="action-btn danger" @click="deleteConfig(guildId as string)" title="删除">
+              <button class="action-btn danger" @click="deleteConfig(guildId as string)" title="删除配置">
                 <k-icon name="trash-2" />
+                <span>删除</span>
               </button>
             </div>
           </div>
@@ -219,12 +229,29 @@
           <div class="edit-sidebar">
             <div
               class="sidebar-item"
-              :class="{ active: activeTab === 'basic' }"
-              @click="activeTab = 'basic'"
+              :class="{ active: activeTab === 'entrance' }"
+              @click="activeTab = 'entrance'"
             >
-              <k-icon name="settings" />
-              <span>基础配置</span>
+              <k-icon name="user-plus" />
+              <span>入群设置</span>
             </div>
+            <div
+              class="sidebar-item"
+              :class="{ active: activeTab === 'moderation' }"
+              @click="activeTab = 'moderation'"
+            >
+              <k-icon name="shield" />
+              <span>违规管理</span>
+            </div>
+            <div
+              class="sidebar-item"
+              :class="{ active: activeTab === 'exit' }"
+              @click="activeTab = 'exit'"
+            >
+              <k-icon name="user-minus" />
+              <span>退群设置</span>
+            </div>
+            <div class="divider" style="margin: 0.5rem 0.75rem; width: auto; opacity: 0.5;"></div>
             <div
               class="sidebar-item"
               :class="{ active: activeTab === 'plugins' }"
@@ -237,8 +264,8 @@
 
           <!-- 右侧内容区 -->
           <div class="edit-content">
-            <!-- 基础配置 -->
-            <div v-show="activeTab === 'basic'" class="config-section">
+            <!-- 入群设置 -->
+            <div v-show="activeTab === 'entrance'" class="config-section">
               <div class="section-title">入群欢迎</div>
               <div class="form-group">
                 <label>启用欢迎消息</label>
@@ -257,7 +284,7 @@
                 ></textarea>
               </div>
 
-              <div class="section-title" style="margin-top: 2rem;">入群验证</div>
+              <div class="section-title" style="margin-top: 1.5rem;">入群验证</div>
               <div class="form-group">
                 <label>自动拒绝</label>
                 <label class="toggle-switch">
@@ -282,12 +309,11 @@
                 <label>等级限制</label>
                 <el-input-number v-model="editingConfig.levelLimit" :min="0" style="width: 100%" />
               </div>
-               <div class="form-group">
-                <label>退群冷却(天)</label>
-                <el-input-number v-model="editingConfig.leaveCooldown" :min="0" style="width: 100%" />
-              </div>
+            </div>
 
-              <div class="section-title" style="margin-top: 2rem;">警告设置</div>
+            <!-- 违规管理 -->
+            <div v-show="activeTab === 'moderation'" class="config-section">
+              <div class="section-title">警告设置</div>
               <div class="form-group">
                 <label>警告阈值</label>
                 <el-input-number v-model="editingConfig.warnLimit" :min="0" placeholder="留空使用全局设置" style="width: 100%" />
@@ -296,7 +322,7 @@
                 <span class="form-hint">达到此次数后触发自动禁言（0=每次警告都禁言，留空则使用全局设置）</span>
               </div>
 
-              <div class="section-title" style="margin-top: 2rem;">违规处理 (关键词/禁言)</div>
+              <div class="section-title" style="margin-top: 1.5rem;">违规处理 (关键词/禁言)</div>
               <div class="form-group">
                 <label>禁言关键词</label>
                 <textarea
@@ -338,8 +364,11 @@
                 <label>禁言时长(ms)</label>
                  <el-input-number v-model="editingConfig.forbidden.muteDuration" :min="0" :step="1000" style="width: 100%" />
               </div>
+            </div>
 
-              <div class="section-title" style="margin-top: 2rem;">退群欢送</div>
+            <!-- 退群设置 -->
+            <div v-show="activeTab === 'exit'" class="config-section">
+              <div class="section-title">退群欢送</div>
               <div class="form-group">
                 <label>启用欢送消息</label>
                 <label class="toggle-switch">
@@ -357,6 +386,11 @@
                 ></textarea>
               </div>
 
+              <div class="section-title" style="margin-top: 1.5rem;">其他设置</div>
+              <div class="form-group">
+                <label>退群冷却(天)</label>
+                <el-input-number v-model="editingConfig.leaveCooldown" :min="0" style="width: 100%" />
+              </div>
             </div>
 
             <!-- 功能插件 -->
@@ -683,7 +717,7 @@ const editingGuildId = ref('')
 const editingConfig = ref<GroupConfig | null>(null)
 const editingApprovalKeywords = ref('')
 const editingForbiddenKeywords = ref('')
-const activeTab = ref('basic')
+const activeTab = ref('entrance')
 const expandedPlugins = ref<Record<string, boolean>>({})
 
 // 自动拒绝 (Boolean <-> String 'true'/'false')
@@ -739,6 +773,7 @@ const editConfig = (guildId: string) => {
   editingConfig.value = config
   editingApprovalKeywords.value = (config.approvalKeywords || []).join(', ')
   editingForbiddenKeywords.value = (config.keywords || []).join(', ')
+  activeTab.value = 'entrance'
   showEditDialog.value = true
 }
 
@@ -853,6 +888,9 @@ onMounted(() => {
 <style scoped>
 /* ========== 使用 Koishi 全局 CSS 变量 ========== */
 .config-view {
+  --radius: 6px;
+  --border: 1px solid var(--k-color-divider);
+
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -972,7 +1010,7 @@ onMounted(() => {
   background: transparent;
   color: var(--fg1);
   font-size: 0.75rem;
-  width: 140px;
+  width: 200px;
   outline: none;
   font-family: var(--font-family);
 }
@@ -981,35 +1019,50 @@ onMounted(() => {
   color: var(--fg3);
 }
 
-/* ========== Header Buttons Override ========== */
-.header-actions :deep(.k-button) {
-  font-size: 0.75rem;
-  padding: 0.375rem 0.625rem;
-  border-radius: 6px;
-  border: 1px solid var(--k-color-divider);
-  background: var(--bg3);
-  color: var(--fg2);
-  font-weight: 500;
-  transition: all 0.15s ease;
+.divider-vertical {
+  width: 1px;
+  height: 16px;
+  background: var(--k-color-divider);
+  margin: 0 0.5rem;
 }
 
-.header-actions :deep(.k-button:hover) {
-  background: var(--k-card-bg);
+/* ========== Header Buttons Override ========== */
+.btn {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.12s ease;
+  user-select: none;
+  border: var(--border);
+  line-height: 1;
+}
+
+.btn-secondary {
+  background: var(--bg3);
+  color: var(--fg2);
+}
+
+.btn-secondary:hover {
+  background: var(--bg3);
   border-color: var(--k-color-border);
   color: var(--fg1);
 }
 
-.header-actions :deep(.k-button.primary),
-.header-actions :deep(.k-button[type="primary"]) {
+.btn-primary {
   background: var(--k-color-primary-fade);
-  border-color: var(--k-color-primary-tint);
   color: var(--k-color-primary);
+  border-color: rgba(116, 89, 255, 0.2);
 }
 
-.header-actions :deep(.k-button.primary:hover),
-.header-actions :deep(.k-button[type="primary"]:hover) {
-  background: rgba(116, 89, 255, 0.25);
-  border-color: rgba(116, 89, 255, 0.5);
+.btn-primary:hover {
+  background: rgba(116, 89, 255, 0.18);
+  border-color: rgba(116, 89, 255, 0.35);
+  color: var(--k-color-primary);
 }
 
 .header-actions :deep(.k-icon) {
@@ -1071,12 +1124,12 @@ onMounted(() => {
 
 .list-header {
   display: grid;
-  grid-template-columns: 1fr 160px 140px 100px;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  grid-template-columns: 1fr 180px 120px 190px;
+  gap: 1rem;
+  padding: 0.625rem 1rem;
   background: var(--bg1);
   border-bottom: 1px solid var(--k-color-border);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--fg3);
   text-transform: uppercase;
@@ -1085,9 +1138,9 @@ onMounted(() => {
 
 .list-row {
   display: grid;
-  grid-template-columns: 1fr 160px 140px 100px;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  grid-template-columns: 1fr 180px 120px 190px;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--k-color-divider);
   cursor: pointer;
   transition: background-color 0.15s ease;
@@ -1195,12 +1248,14 @@ onMounted(() => {
   background: transparent;
   border: 1px solid var(--k-color-divider);
   border-radius: 4px;
-  padding: 4px 6px;
+  padding: 4px 8px;
   cursor: pointer;
   color: var(--fg3);
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
   transition: all 0.15s ease;
 }
 
@@ -1231,7 +1286,7 @@ onMounted(() => {
 @media (max-width: 900px) {
   .list-header,
   .list-row {
-    grid-template-columns: 1fr 120px 80px;
+    grid-template-columns: 1fr 150px 190px;
   }
 
   .col-stats {
@@ -1242,11 +1297,26 @@ onMounted(() => {
 @media (max-width: 600px) {
   .list-header,
   .list-row {
-    grid-template-columns: 1fr 80px;
+    grid-template-columns: 1fr 40px;
+    padding: 0.75rem 0.5rem;
+    gap: 0.5rem;
   }
 
-  .col-features {
+  .col-features,
+  .col-stats {
     display: none;
+  }
+
+  .col-actions .action-btn {
+    padding: 4px;
+  }
+
+  .col-actions .action-btn span {
+    display: none;
+  }
+
+  .col-actions button:not(:nth-child(2)) {
+    display: none; /* 只显示编辑按钮 */
   }
 }
 
