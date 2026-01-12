@@ -367,7 +367,7 @@ onMounted(() => {
 <style scoped>
 /* ========================================
    GitHub Dimmed / Vercel 风格 Dashboard
-   硬核专业高信噪比
+   使用 Koishi 全局 CSS 变量
    ======================================== */
 
 .dashboard-container {
@@ -377,7 +377,7 @@ onMounted(() => {
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--gh-font-sans, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif);
 }
 
 /* Hero Section - 极简顶部 */
@@ -414,14 +414,14 @@ onMounted(() => {
   font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: -0.3px;
-  color: var(--fg1, rgba(255, 255, 245, 0.9));
+  color: var(--fg1);
 }
 
 .hero-meta {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--fg3, rgba(255, 255, 245, 0.4));
+  color: var(--fg3);
   font-size: 0.7rem;
   margin-top: 2px;
 }
@@ -431,13 +431,13 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #3fb950;
+  color: var(--k-color-success);
   font-weight: 500;
   font-size: 0.65rem;
-  background: rgba(63, 185, 80, 0.1);
+  background: var(--k-color-success-fade);
   padding: 2px 6px;
   border-radius: 3px;
-  border: 1px solid rgba(63, 185, 80, 0.2);
+  border: 1px solid rgba(59, 165, 94, 0.2);
 }
 
 /* 克制的实心圆点，无高斯模糊 */
@@ -445,57 +445,57 @@ onMounted(() => {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #3fb950;
+  background: var(--k-color-success);
 }
 
 /* 版本标签 - 等宽字体 */
 .version-tag {
-  background: var(--bg3, #313136);
+  background: var(--bg3);
   padding: 2px 5px;
   border-radius: 3px;
-  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
   font-size: 0.65rem;
-  color: var(--fg3, rgba(255, 255, 245, 0.4));
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  color: var(--fg3);
+  border: 1px solid var(--k-color-divider);
 }
 
 .uptime {
-  color: var(--fg3, rgba(255, 255, 245, 0.4));
-  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  color: var(--fg3);
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
 }
 
 /* 按钮 - GitHub 风格 */
 .button {
   cursor: pointer;
   padding: 5px 10px;
-  border-radius: 4px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 0.7rem;
   font-weight: 500;
-  transition: all 0.12s ease;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
   user-select: none;
-  background: var(--bg3, #313136);
-  color: var(--fg2, rgba(255, 255, 245, 0.6));
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  background: var(--bg3);
+  color: var(--fg2);
+  border: 1px solid var(--k-color-divider);
 }
 
 .button:hover {
-  background: var(--bg2, #252529);
-  border-color: var(--k-color-border, rgba(82, 82, 89, 0.8));
-  color: var(--fg1, rgba(255, 255, 245, 0.9));
+  background: var(--k-card-bg);
+  border-color: var(--k-color-border);
+  color: var(--fg1);
 }
 
 .button.is-primary {
-  background: rgba(63, 185, 80, 0.12);
-  color: #3fb950;
-  border-color: rgba(63, 185, 80, 0.25);
+  background: var(--k-color-success-fade);
+  color: var(--k-color-success);
+  border-color: rgba(59, 165, 94, 0.25);
 }
 
 .button.is-primary:hover {
-  background: rgba(63, 185, 80, 0.2);
-  border-color: rgba(63, 185, 80, 0.4);
+  background: rgba(59, 165, 94, 0.2);
+  border-color: rgba(59, 165, 94, 0.4);
 }
 
 /* Grid Layout - 紧凑间距 */
@@ -525,13 +525,13 @@ onMounted(() => {
 }
 
 .bento-grid.is-editing .grid-item {
-  border: 1px dashed var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border: 1px dashed var(--k-color-divider);
   border-radius: 6px;
   cursor: move;
 }
 
 .bento-grid.is-editing .grid-item:hover {
-  border-color: var(--k-color-primary, #7459ff);
+  border-color: var(--k-color-primary);
 }
 
 /* Edit Overlay */
@@ -561,23 +561,23 @@ onMounted(() => {
   right: 6px;
   width: 24px;
   height: 24px;
-  background: rgba(248, 81, 73, 0.9);
+  background: var(--k-color-danger);
   color: #fff;
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.12s ease;
+  transition: background-color 0.12s ease;
   font-size: 12px;
 }
 
 .remove-btn:hover {
-  background: #f85149;
+  background: var(--k-color-danger-shade);
 }
 
 .drag-handle {
-  color: var(--fg1, rgba(255, 255, 245, 0.9));
+  color: var(--fg1);
   font-size: 1.25rem;
   opacity: 0.8;
 }
@@ -585,24 +585,24 @@ onMounted(() => {
 /* Add Placeholder */
 .add-widget-placeholder {
   grid-column: span 1;
-  border: 1px dashed var(--k-color-divider, rgba(82, 82, 89, 0.5)) !important;
+  border: 1px dashed var(--k-color-divider) !important;
   border-radius: 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--fg3, rgba(255, 255, 245, 0.4));
+  color: var(--fg3);
   cursor: pointer !important;
-  transition: all 0.12s ease;
+  transition: border-color 0.12s ease, color 0.12s ease, background-color 0.12s ease;
   min-height: 120px;
   background: transparent;
   gap: 4px;
 }
 
 .add-widget-placeholder:hover {
-  border-color: var(--k-color-primary, #7459ff) !important;
-  color: var(--k-color-primary, #7459ff);
-  background: rgba(116, 89, 255, 0.08);
+  border-color: var(--k-color-primary) !important;
+  color: var(--k-color-primary);
+  background: var(--k-color-primary-fade);
 }
 
 .add-widget-placeholder .k-icon {
@@ -629,12 +629,12 @@ onMounted(() => {
 }
 
 .modal-content {
-  background: var(--bg2, #252529);
+  background: var(--k-card-bg);
   width: 400px;
   max-width: 90vw;
   border-radius: 6px;
   padding: 1rem;
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border: 1px solid var(--k-color-border);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
@@ -644,27 +644,27 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.625rem;
-  border-bottom: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border-bottom: 1px solid var(--k-color-divider);
 }
 
 .modal-header h3 {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--fg1, rgba(255, 255, 245, 0.9));
+  color: var(--fg1);
 }
 
 .close-btn {
   cursor: pointer;
   padding: 4px;
-  border-radius: 3px;
-  color: var(--fg3, rgba(255, 255, 245, 0.4));
-  transition: all 0.12s ease;
+  border-radius: 4px;
+  color: var(--fg3);
+  transition: color 0.12s ease, background-color 0.12s ease;
 }
 
 .close-btn:hover {
-  background: var(--bg3, #313136);
-  color: var(--fg1, rgba(255, 255, 245, 0.9));
+  background: var(--bg3);
+  color: var(--fg1);
 }
 
 .widget-list {
@@ -680,28 +680,28 @@ onMounted(() => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.625rem;
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
-  border-radius: 4px;
+  border: 1px solid var(--k-color-divider);
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
   background: transparent;
 }
 
 .widget-option:hover {
-  border-color: var(--k-color-primary, #7459ff);
-  background: rgba(116, 89, 255, 0.08);
+  border-color: var(--k-color-primary);
+  background: var(--k-color-primary-fade);
 }
 
 .widget-preview {
   width: 32px;
   height: 32px;
-  background: var(--bg3, #313136);
-  border-radius: 4px;
+  background: var(--bg3);
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  color: var(--fg2, rgba(255, 255, 245, 0.6));
+  color: var(--fg2);
   flex-shrink: 0;
 }
 
@@ -709,13 +709,13 @@ onMounted(() => {
   margin: 0 0 2px 0;
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--fg1, rgba(255, 255, 245, 0.9));
+  color: var(--fg1);
 }
 
 .widget-info p {
   margin: 0;
   font-size: 0.7rem;
-  color: var(--fg3, rgba(255, 255, 245, 0.4));
+  color: var(--fg3);
 }
 
 /* 响应式布局 */

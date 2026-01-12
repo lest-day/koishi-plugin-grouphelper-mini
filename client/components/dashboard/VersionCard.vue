@@ -33,12 +33,12 @@ defineProps<{
 </script>
 
 <style scoped>
-/* GitHub Dimmed 风格版本卡片 */
+/* GitHub Dimmed 风格版本卡片 - 使用 Koishi 变量 */
 .card {
-  background: var(--bg2, var(--k-card-bg));
+  background: var(--k-card-bg);
   border-radius: 6px;
   padding: 1rem 1.25rem;
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border: 1px solid var(--k-color-border);
   transition: border-color 0.15s ease;
   height: 100%;
   min-height: 320px;
@@ -48,7 +48,7 @@ defineProps<{
 }
 
 .card:hover {
-  border-color: var(--k-color-border, rgba(82, 82, 89, 0.8));
+  border-color: var(--fg3);
 }
 
 .card-header {
@@ -56,7 +56,7 @@ defineProps<{
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.875rem;
-  color: var(--fg1, var(--k-color-text));
+  color: var(--fg1);
   font-weight: 500;
 }
 
@@ -77,14 +77,14 @@ defineProps<{
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.625rem;
-  background: var(--bg3, var(--k-color-bg-2));
+  background: var(--bg3);
   border-radius: 4px;
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.3));
+  border: 1px solid var(--k-color-divider);
 }
 
 .version-label {
   font-size: 0.65rem;
-  color: var(--fg3, var(--k-color-text-description));
+  color: var(--fg3);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -94,21 +94,21 @@ defineProps<{
 .version-value {
   font-size: 0.85rem;
   font-weight: 500;
-  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
-  color: var(--fg2, var(--k-color-text));
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace);
+  color: var(--fg2);
 }
 
-/* 克制的颜色方案 */
+/* 克制的颜色方案 - 使用 Koishi 变量 */
 .version-value.current {
-  color: var(--k-color-primary, #7459ff);
+  color: var(--k-color-primary);
 }
 .version-value.npm {
-  color: #3fb950;
+  color: var(--k-color-success);
 }
 .version-value.main {
-  color: #d29922;
+  color: var(--k-color-warning);
 }
 .version-value.dev {
-  color: #f85149;
+  color: var(--k-color-danger);
 }
 </style>

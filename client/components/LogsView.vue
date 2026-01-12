@@ -396,7 +396,7 @@ const closeDetail = () => {
   --radius: 6px;
   --radius-sm: 4px;
   --border: 1px solid var(--k-color-divider);
-  --border-subtle: 1px solid rgba(82, 82, 89, 0.35);
+  --border-subtle: 1px solid var(--k-color-divider);
 
   height: 100%;
   display: flex;
@@ -474,21 +474,21 @@ const closeDetail = () => {
 }
 
 .btn-secondary:hover {
-  background: #3a3a3f;
+  background: var(--bg3);
   border-color: var(--k-color-border);
   color: var(--fg1);
 }
 
 .btn-primary {
-  background: rgba(116, 89, 255, 0.1);
-  color: #9b87f5;
+  background: var(--k-color-primary-fade);
+  color: var(--k-color-primary);
   border-color: rgba(116, 89, 255, 0.2);
 }
 
 .btn-primary:hover {
   background: rgba(116, 89, 255, 0.18);
   border-color: rgba(116, 89, 255, 0.35);
-  color: #a78bfa;
+  color: var(--k-color-primary);
 }
 
 .btn-ghost {
@@ -695,11 +695,11 @@ const closeDetail = () => {
 .table-row {
   display: flex;
   padding: 0.4375rem 0.875rem;
-  border-bottom: 1px solid rgba(82, 82, 89, 0.25);
+  border-bottom: 1px solid var(--k-color-divider);
   align-items: center;
   font-size: 0.8rem;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background-color 0.1s ease;
 }
 
 .table-row:last-child {
@@ -707,7 +707,7 @@ const closeDetail = () => {
 }
 
 .table-row:hover {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--k-hover-bg);
 }
 
 /* ======== 列样式 ======== */
@@ -738,8 +738,8 @@ const closeDetail = () => {
 .cmd-tag {
   font-family: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', Consolas, monospace;
   font-size: 0.6875rem;
-  background: rgba(116, 89, 255, 0.1);
-  color: #9b87f5;
+  background: var(--k-color-primary-fade);
+  color: var(--k-color-primary);
   padding: 2px 5px;
   border-radius: 3px;
   border: 1px solid rgba(116, 89, 255, 0.18);
@@ -795,24 +795,24 @@ const closeDetail = () => {
 
 /* 成功 - 暗绿色，克制 */
 .status-badge.success {
-  background: rgba(46, 160, 67, 0.08);
-  color: #2ea043;
+  background: var(--k-color-success-fade);
+  color: var(--k-color-success);
   border: 1px solid rgba(46, 160, 67, 0.15);
 }
 
 .status-badge.success .status-dot {
-  background: #2ea043;
+  background: var(--k-color-success);
 }
 
 /* 失败 - 暗红色 */
 .status-badge.fail {
-  background: rgba(218, 54, 51, 0.08);
-  color: #da3633;
+  background: var(--k-color-danger-fade);
+  color: var(--k-color-danger);
   border: 1px solid rgba(218, 54, 51, 0.15);
 }
 
 .status-badge.fail .status-dot {
-  background: #da3633;
+  background: var(--k-color-danger);
 }
 
 /* ======== 分页栏 ======== */
@@ -852,12 +852,12 @@ const closeDetail = () => {
 }
 
 .table-body::-webkit-scrollbar-thumb {
-  background: rgba(82, 82, 89, 0.4);
+  background: var(--k-color-divider);
   border-radius: 2px;
 }
 
 .table-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(82, 82, 89, 0.6);
+  background: var(--fg3);
 }
 
 /* ======== 响应式 ======== */
@@ -934,8 +934,8 @@ const closeDetail = () => {
   font-family: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', Consolas, monospace;
   font-size: 0.8rem;
   font-weight: 600;
-  background: rgba(116, 89, 255, 0.1);
-  color: #9b87f5;
+  background: var(--k-color-primary-fade);
+  color: var(--k-color-primary);
   padding: 3px 8px;
   border-radius: 4px;
   border: 1px solid rgba(116, 89, 255, 0.18);
@@ -955,7 +955,7 @@ const closeDetail = () => {
 }
 
 .detail-close:hover {
-  background: var(--bg3);
+  background: var(--k-hover-bg);
   color: var(--fg1);
 }
 
@@ -1032,7 +1032,7 @@ const closeDetail = () => {
 }
 
 .detail-code.error pre {
-  color: #da3633;
+  color: var(--k-color-danger);
 }
 
 /* 弹窗动画 */

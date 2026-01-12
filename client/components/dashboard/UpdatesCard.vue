@@ -54,12 +54,12 @@ const formatRelativeTime = (dateStr: string) => {
 </script>
 
 <style scoped>
-/* GitHub Dimmed 风格更新卡片 */
+/* GitHub Dimmed 风格更新卡片 - 使用 Koishi 变量 */
 .card {
-  background: var(--bg2, var(--k-card-bg));
+  background: var(--k-card-bg);
   border-radius: 6px;
   padding: 1rem 1.25rem;
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border: 1px solid var(--k-color-border);
   transition: border-color 0.15s ease;
   height: 100%;
   min-height: 320px;
@@ -69,7 +69,7 @@ const formatRelativeTime = (dateStr: string) => {
 }
 
 .card:hover {
-  border-color: var(--k-color-border, rgba(82, 82, 89, 0.8));
+  border-color: var(--fg3);
 }
 
 .card-header {
@@ -78,8 +78,8 @@ const formatRelativeTime = (dateStr: string) => {
   gap: 0.5rem;
   margin-bottom: 0.75rem;
   padding-bottom: 0.625rem;
-  border-bottom: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
-  color: var(--fg1, var(--k-color-text));
+  border-bottom: 1px solid var(--k-color-divider);
+  color: var(--fg1);
   font-weight: 500;
 }
 
@@ -104,12 +104,12 @@ const formatRelativeTime = (dateStr: string) => {
   text-decoration: none;
   color: inherit;
   border-radius: 4px;
-  transition: background 0.15s ease;
+  transition: background-color 0.15s ease;
   margin-left: 0.375rem;
 }
 
 .commit-item:hover {
-  background: var(--bg3, var(--k-hover-bg));
+  background: var(--k-hover-bg);
 }
 
 /* 时间轴线 */
@@ -120,7 +120,7 @@ const formatRelativeTime = (dateStr: string) => {
   top: 2.25rem;
   bottom: -0.25rem;
   width: 1px;
-  background: var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  background: var(--k-color-divider);
   z-index: 0;
 }
 
@@ -138,7 +138,7 @@ const formatRelativeTime = (dateStr: string) => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 2px solid var(--bg2, var(--k-card-bg));
+  border: 2px solid var(--k-card-bg);
 }
 
 .commit-info {
@@ -150,7 +150,7 @@ const formatRelativeTime = (dateStr: string) => {
 .commit-msg {
   font-weight: 500;
   margin-bottom: 0.25rem;
-  color: var(--fg1, var(--k-color-text));
+  color: var(--fg1);
   font-size: 0.8rem;
   line-height: 1.4;
   display: -webkit-box;
@@ -162,7 +162,7 @@ const formatRelativeTime = (dateStr: string) => {
 
 .commit-meta {
   font-size: 0.7rem;
-  color: var(--fg3, var(--k-color-text-description));
+  color: var(--fg3);
   display: flex;
   gap: 0.5rem;
   align-items: center;
@@ -170,7 +170,7 @@ const formatRelativeTime = (dateStr: string) => {
 
 .commit-meta span:first-child {
   font-weight: 500;
-  color: var(--k-color-primary, #7459ff);
+  color: var(--k-color-primary);
 }
 
 /* 滚动条 */
@@ -181,14 +181,14 @@ const formatRelativeTime = (dateStr: string) => {
   background: transparent;
 }
 .commits-list::-webkit-scrollbar-thumb {
-  background: var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  background: var(--k-color-border);
   border-radius: 2px;
 }
 
 .loading-text, .error-text {
   text-align: center;
   padding: 1.5rem;
-  color: var(--fg3, var(--k-color-text-description));
+  color: var(--fg3);
   font-size: 0.8rem;
   display: flex;
   align-items: center;

@@ -18,6 +18,15 @@
           <label>解析群名</label>
           <el-switch v-model="fetchNames" @change="refreshConfigs" />
         </div>
+        <!-- 视图切换 -->
+        <div class="view-toggle">
+          <button class="view-btn" :class="{ active: viewMode === 'grid' }" @click="viewMode = 'grid'" title="卡片视图">
+            <k-icon name="grid" />
+          </button>
+          <button class="view-btn" :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'" title="列表视图">
+            <k-icon name="list" />
+          </button>
+        </div>
         <k-button @click="showCreateDialog = true">
           <template #icon><k-icon name="plus" /></template>
           新建配置
@@ -46,91 +55,125 @@
         <p>{{ searchQuery ? '未找到匹配的群组' : '暂无群组配置' }}</p>
       </div>
 
-      <div
-        v-for="(config, guildId) in filteredConfigs"
-        :key="guildId"
-        class="config-card"
-        @click="editConfig(guildId as string)"
-      >
-        <div class="card-header">
-          <div class="guild-info">
-            <img
-              v-if="fetchNames && config.guildAvatar"
-              :src="config.guildAvatar"
-              class="guild-avatar"
-              @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
-            />
-            <k-icon v-else name="users" class="guild-icon" />
-            <span class="guild-id">{{ config.guildName ? `${config.guildName} (${guildId})` : guildId }}</span>
+      <!-- 列表视图 -->
+      <template v-if="viewMode === 'list'">
+        <div class="list-table">
+          <div class="list-header">
+            <span class="col-guild">群组</span>
+            <span class="col-features">功能状态</span>
+            <span class="col-stats">配置统计</span>
+            <span class="col-actions">操作</span>
           </div>
-        </div>
-        <div class="card-body">
-          <div class="features-grid">
-            <div class="feature-item" :class="{ active: config.welcomeEnabled }">
-              <span class="dot"></span>
-              欢迎消息
+          <div
+            v-for="(config, guildId) in filteredConfigs"
+            :key="guildId"
+            class="list-row"
+            @click="editConfig(guildId as string)"
+          >
+            <div class="col-guild">
+              <img
+                v-if="fetchNames && config.guildAvatar"
+                :src="config.guildAvatar"
+                class="guild-avatar-sm"
+                @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
+              />
+              <k-icon v-else name="users" class="guild-icon-sm" />
+              <div class="guild-text">
+                <span class="guild-name">{{ config.guildName || guildId }}</span>
+                <span class="guild-id-sub" v-if="config.guildName">{{ guildId }}</span>
+              </div>
             </div>
-            <div class="feature-item" :class="{ active: config.goodbyeEnabled }">
-              <span class="dot"></span>
-              欢送消息
+            <div class="col-features">
+              <span class="badge-sm" :class="{ active: config.welcomeEnabled }" title="欢迎">迎</span>
+              <span class="badge-sm" :class="{ active: config.goodbyeEnabled }" title="欢送">送</span>
+              <span class="badge-sm" :class="{ active: config.antiRecall?.enabled }" title="防撤回">撤</span>
+              <span class="badge-sm" :class="{ active: config.antiRepeat?.enabled }" title="复读">复</span>
+              <span class="badge-sm" :class="{ active: config.openai?.enabled }" title="AI">AI</span>
+              <span class="badge-sm" :class="{ active: config.report?.enabled }" title="举报">报</span>
             </div>
-            <div class="feature-item" :class="{ active: config.antiRecall?.enabled }">
-              <span class="dot"></span>
-              防撤回
+            <div class="col-stats">
+              <span v-if="config.approvalKeywords?.length"><b>{{ config.approvalKeywords.length }}</b> 入群词</span>
+              <span v-if="config.keywords?.length"><b>{{ config.keywords.length }}</b> 禁言词</span>
+              <span v-if="!config.approvalKeywords?.length && !config.keywords?.length" class="muted">-</span>
             </div>
-            <div class="feature-item" :class="{ active: config.antiRepeat?.enabled }">
-              <span class="dot"></span>
-              复读检测
-            </div>
-            <div class="feature-item" :class="{ active: config.dice?.enabled }">
-              <span class="dot"></span>
-              掷骰子
-            </div>
-            <div class="feature-item" :class="{ active: config.banme?.enabled }">
-              <span class="dot"></span>
-              Banme
-            </div>
-            <div class="feature-item" :class="{ active: config.openai?.enabled }">
-              <span class="dot"></span>
-              AI助手
-            </div>
-            <div class="feature-item" :class="{ active: config.report?.enabled }">
-              <span class="dot"></span>
-              举报功能
-            </div>
-          </div>
-          
-          <div class="stats-row">
-            <div class="stat-pill">
-              <span class="stat-label">入群词</span>
-              <span class="stat-value">{{ config.approvalKeywords?.length || 0 }}</span>
-            </div>
-            <div class="stat-pill">
-              <span class="stat-label">禁言词</span>
-              <span class="stat-value">{{ config.keywords?.length || 0 }}</span>
-            </div>
-            <div class="stat-pill" v-if="config.antiRepeat?.enabled">
-              <span class="stat-label">复读阈值</span>
-              <span class="stat-value">{{ config.antiRepeat.threshold }}</span>
+            <div class="col-actions" @click.stop>
+              <button class="action-btn" @click="copyGuildId(guildId as string)" title="复制群号">
+                <k-icon name="copy" />
+              </button>
+              <button class="action-btn" @click="editConfig(guildId as string)" title="编辑">
+                <k-icon name="edit-2" />
+              </button>
+              <button class="action-btn danger" @click="deleteConfig(guildId as string)" title="删除">
+                <k-icon name="trash-2" />
+              </button>
             </div>
           </div>
         </div>
-        
-        <div class="card-footer">
-          <k-button size="small" @click.stop="copyGuildId(guildId as string)" title="复制群号">
-            <template #icon><k-icon name="copy" /></template>
-            复制
-          </k-button>
-          <k-button size="small" @click.stop="editConfig(guildId as string)" title="编辑配置">
-            <template #icon><k-icon name="edit-2" /></template>
-            编辑
-          </k-button>
-          <k-button size="small" type="danger" @click.stop="deleteConfig(guildId as string)" title="删除配置">
-            <template #icon><k-icon name="trash-2" /></template>
-            删除
-          </k-button>
+      </template>
+
+      <!-- 卡片视图 -->
+      <template v-else>
+        <div class="card-grid">
+          <div
+            v-for="(config, guildId) in filteredConfigs"
+            :key="guildId"
+            class="config-card"
+            @click="editConfig(guildId as string)"
+          >
+            <div class="card-header">
+              <div class="guild-info">
+                <img
+                  v-if="fetchNames && config.guildAvatar"
+                  :src="config.guildAvatar"
+                  class="guild-avatar"
+                  @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
+                />
+                <k-icon v-else name="users" class="guild-icon" />
+                <span class="guild-id">{{ config.guildName ? `${config.guildName} (${guildId})` : guildId }}</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- 简化的功能指示器 -->
+              <div class="feature-badges">
+                <span class="badge" :class="{ active: config.welcomeEnabled }" title="欢迎消息">迎</span>
+                <span class="badge" :class="{ active: config.goodbyeEnabled }" title="欢送消息">送</span>
+                <span class="badge" :class="{ active: config.antiRecall?.enabled }" title="防撤回">撤</span>
+                <span class="badge" :class="{ active: config.antiRepeat?.enabled }" title="复读检测">复</span>
+                <span class="badge" :class="{ active: config.openai?.enabled }" title="AI助手">AI</span>
+                <span class="badge" :class="{ active: config.report?.enabled }" title="举报功能">报</span>
+              </div>
+
+              <!-- 统计信息单行 -->
+              <div class="card-stats">
+                <span class="stat-item" v-if="config.approvalKeywords?.length">
+                  <span class="stat-num">{{ config.approvalKeywords.length }}</span> 入群词
+                </span>
+                <span class="stat-item" v-if="config.keywords?.length">
+                  <span class="stat-num">{{ config.keywords.length }}</span> 禁言词
+                </span>
+                <span class="stat-item placeholder" v-if="!config.approvalKeywords?.length && !config.keywords?.length">
+                  暂无配置
+                </span>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <k-button size="small" @click.stop="copyGuildId(guildId as string)" title="复制群号">
+                <template #icon><k-icon name="copy" /></template>
+                复制
+              </k-button>
+              <k-button size="small" @click.stop="editConfig(guildId as string)" title="编辑配置">
+                <template #icon><k-icon name="edit-2" /></template>
+                编辑
+              </k-button>
+              <k-button size="small" type="danger" @click.stop="deleteConfig(guildId as string)" title="删除配置">
+                <template #icon><k-icon name="trash-2" /></template>
+                删除
+              </k-button>
+            </div>
+          </div>
         </div>
-      </div>
+      </template>
     </div>
 
     <!-- 新建配置弹窗 -->
@@ -242,6 +285,15 @@
                <div class="form-group">
                 <label>退群冷却(天)</label>
                 <el-input-number v-model="editingConfig.leaveCooldown" :min="0" style="width: 100%" />
+              </div>
+
+              <div class="section-title" style="margin-top: 2rem;">警告设置</div>
+              <div class="form-group">
+                <label>警告阈值</label>
+                <el-input-number v-model="editingConfig.warnLimit" :min="0" placeholder="留空使用全局设置" style="width: 100%" />
+              </div>
+              <div class="form-hint-row">
+                <span class="form-hint">达到此次数后触发自动禁言（0=每次警告都禁言，留空则使用全局设置）</span>
               </div>
 
               <div class="section-title" style="margin-top: 2rem;">违规处理 (关键词/禁言)</div>
@@ -605,6 +657,7 @@ const deleting = ref(false)
 const reloading = ref(false)
 const fetchNames = ref(true)
 const searchQuery = ref('')
+const viewMode = ref<'grid' | 'list'>('list')
 const configs = ref<Record<string, GroupConfig>>({})
 
 // 过滤后的配置列表
@@ -838,6 +891,45 @@ onMounted(() => {
   letter-spacing: 0.01em;
 }
 
+/* 视图切换按钮 */
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--k-color-divider);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-right: 0.5rem;
+}
+
+.view-btn {
+  background: var(--bg3);
+  border: none;
+  padding: 5px 8px;
+  cursor: pointer;
+  color: var(--fg3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.view-btn:first-child {
+  border-right: 1px solid var(--k-color-divider);
+}
+
+.view-btn:hover {
+  background: var(--k-card-bg);
+  color: var(--fg1);
+}
+
+.view-btn.active {
+  background: var(--k-color-primary-fade);
+  color: var(--k-color-primary);
+}
+
+.view-btn :deep(.k-icon) {
+  font-size: 14px;
+}
+
 .view-title {
   font-size: 1rem;
   font-weight: 600;
@@ -965,10 +1057,197 @@ onMounted(() => {
 .config-list {
   flex: 1;
   overflow-y: auto;
+  align-content: start;
+}
+
+/* 列表表格视图 */
+.list-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--k-color-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: 1fr 160px 140px 100px;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--k-color-border);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.list-row {
+  display: grid;
+  grid-template-columns: 1fr 160px 140px 100px;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--k-color-divider);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  align-items: center;
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.list-row:hover {
+  background: var(--k-hover-bg);
+}
+
+.col-guild {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.guild-avatar-sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.guild-icon-sm {
+  font-size: 16px;
+  color: var(--fg3);
+  flex-shrink: 0;
+}
+
+.guild-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.guild-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--fg1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.guild-id-sub {
+  font-size: 0.6875rem;
+  color: var(--fg3);
+  font-family: var(--font-family-code);
+}
+
+.col-features {
+  display: flex;
+  gap: 3px;
+}
+
+.badge-sm {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg1);
+  color: var(--fg3);
+  border: 1px solid var(--k-color-divider);
+}
+
+.badge-sm.active {
+  background: var(--k-color-success-fade);
+  color: var(--k-color-success);
+  border-color: var(--k-color-success);
+}
+
+.col-stats {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  color: var(--fg3);
+}
+
+.col-stats b {
+  font-weight: 600;
+  color: var(--fg1);
+  font-family: var(--font-family-code);
+}
+
+.col-stats .muted {
+  color: var(--fg3);
+}
+
+.col-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  background: transparent;
+  border: 1px solid var(--k-color-divider);
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: var(--fg3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.action-btn:hover {
+  background: var(--bg3);
+  border-color: var(--k-color-border);
+  color: var(--fg1);
+}
+
+.action-btn.danger:hover {
+  background: var(--k-color-danger-fade);
+  border-color: var(--k-color-danger);
+  color: var(--k-color-danger);
+}
+
+.action-btn :deep(.k-icon) {
+  font-size: 12px;
+}
+
+/* 卡片网格视图 */
+.card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 0.75rem;
-  align-content: start;
+}
+
+/* 响应式布局 */
+@media (max-width: 900px) {
+  .list-header,
+  .list-row {
+    grid-template-columns: 1fr 120px 80px;
+  }
+
+  .col-stats {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .list-header,
+  .list-row {
+    grid-template-columns: 1fr 80px;
+  }
+
+  .col-features {
+    display: none;
+  }
 }
 
 .empty-state {
@@ -1088,68 +1367,59 @@ onMounted(() => {
 }
 
 .card-body {
-  padding: 0.75rem;
+  padding: 0.625rem 0.75rem;
+}
+
+/* 功能徽章 - 紧凑单行 */
+.feature-badges {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0.375rem;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.75rem;
-  color: var(--fg3);
-  padding: 2px 0;
-}
-
-.feature-item.active {
-  color: var(--fg2);
-}
-
-.dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--k-color-border);
-  flex-shrink: 0;
-}
-
-.feature-item.active .dot {
-  background: var(--k-color-success);
-}
-
-.stats-row {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.stat-pill {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.6875rem;
-  background: var(--bg1);
-  border: 1px solid var(--k-color-divider);
-  border-radius: 3px;
-  padding: 2px 6px;
   gap: 4px;
+  margin-bottom: 0.5rem;
 }
 
-.stat-label {
+.badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg1);
+  color: var(--fg3);
+  border: 1px solid var(--k-color-divider);
+  transition: all 0.15s ease;
+}
+
+.badge.active {
+  background: var(--k-color-success-fade);
+  color: var(--k-color-success);
+  border-color: var(--k-color-success);
+}
+
+/* 统计信息行 */
+.card-stats {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--fg3);
 }
 
-.stat-value {
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.stat-num {
   font-weight: 600;
   color: var(--fg1);
   font-family: var(--font-family-code);
+}
+
+.stat-item.placeholder {
+  font-style: italic;
 }
 
 /* ========== Dialog & Overlay ========== */
@@ -1418,6 +1688,18 @@ onMounted(() => {
 
 .form-textarea::placeholder {
   color: var(--fg3);
+}
+
+.form-hint-row {
+  margin-top: -0.25rem;
+  margin-bottom: 0.5rem;
+  padding-left: calc(100px + 0.75rem);
+}
+
+.form-hint {
+  font-size: 0.6875rem;
+  color: var(--fg3);
+  font-style: italic;
 }
 
 /* ========== El-Input Override ========== */

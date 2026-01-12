@@ -55,12 +55,12 @@ const getBarHeight = (count: number, max: number) => {
 </script>
 
 <style scoped>
-/* GitHub Dimmed 风格命令排行卡片 */
+/* GitHub Dimmed 风格命令排行卡片 - 使用 Koishi 变量 */
 .card {
-  background: var(--bg2, var(--k-card-bg));
+  background: var(--k-card-bg);
   border-radius: 6px;
   padding: 1rem 1.25rem;
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border: 1px solid var(--k-color-border);
   transition: border-color 0.15s ease;
   height: 100%;
   min-height: 320px;
@@ -70,7 +70,7 @@ const getBarHeight = (count: number, max: number) => {
 }
 
 .card:hover {
-  border-color: var(--k-color-border, rgba(82, 82, 89, 0.8));
+  border-color: var(--fg3);
 }
 
 .card-header {
@@ -78,7 +78,7 @@ const getBarHeight = (count: number, max: number) => {
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.875rem;
-  color: var(--fg1, var(--k-color-text));
+  color: var(--fg1);
   font-weight: 500;
 }
 
@@ -91,11 +91,11 @@ const getBarHeight = (count: number, max: number) => {
   margin-left: auto;
   font-size: 0.7rem;
   font-weight: 400;
-  color: var(--fg3, var(--k-color-text-description));
-  background: var(--bg3, var(--k-color-bg-2));
+  color: var(--fg3);
+  background: var(--bg3);
   padding: 2px 6px;
   border-radius: 3px;
-  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
 }
 
 .chart-container {
@@ -107,7 +107,7 @@ const getBarHeight = (count: number, max: number) => {
 .chart-loading, .chart-empty {
   width: 100%;
   text-align: center;
-  color: var(--fg3, var(--k-color-text-description));
+  color: var(--fg3);
   font-size: 0.8rem;
   padding: 1rem 0;
 }
@@ -127,11 +127,11 @@ const getBarHeight = (count: number, max: number) => {
   padding: 4px 6px;
   margin: 0 -6px;
   border-radius: 4px;
-  transition: background 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .h-bar-item:hover {
-  background: var(--bg3, var(--k-hover-bg));
+  background: var(--k-hover-bg);
 }
 
 .h-bar-label {
@@ -147,10 +147,10 @@ const getBarHeight = (count: number, max: number) => {
   width: 16px;
   height: 16px;
   border-radius: 3px;
-  background: var(--bg3, var(--k-color-bg-2));
-  color: var(--fg3, var(--k-color-text-description));
+  background: var(--bg3);
+  color: var(--fg3);
   font-size: 0.6rem;
-  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -173,8 +173,8 @@ const getBarHeight = (count: number, max: number) => {
 
 .h-bar-name {
   font-size: 0.75rem;
-  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
-  color: var(--fg2, var(--k-color-text));
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
+  color: var(--fg2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -185,7 +185,7 @@ const getBarHeight = (count: number, max: number) => {
 .h-bar-track {
   flex: 1;
   height: 6px;
-  background: var(--bg3, var(--k-color-bg-2));
+  background: var(--bg3);
   border-radius: 1px;
   overflow: hidden;
 }
@@ -193,7 +193,7 @@ const getBarHeight = (count: number, max: number) => {
 /* 进度条填充 - 直角风格 */
 .h-bar-fill {
   height: 100%;
-  background: var(--k-color-primary, #7459ff);
+  background: var(--k-color-primary);
   border-radius: 1px;
   transition: width 0.4s ease;
 }
@@ -202,9 +202,9 @@ const getBarHeight = (count: number, max: number) => {
 .h-bar-count {
   min-width: 32px;
   font-size: 0.7rem;
-  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
   font-weight: 500;
-  color: var(--fg3, var(--k-color-text-description));
+  color: var(--fg3);
   text-align: right;
 }
 

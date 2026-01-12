@@ -31,12 +31,12 @@ const resolvedIcon = computed(() => {
 </script>
 
 <style scoped>
-/* GitHub Dimmed 风格统计卡片 */
+/* GitHub Dimmed 风格统计卡片 - 使用 Koishi 变量 */
 .card {
-  background: var(--bg2, var(--k-card-bg));
+  background: var(--k-card-bg);
   border-radius: 6px;
   padding: 1rem 1.25rem;
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border: 1px solid var(--k-color-border);
   transition: border-color 0.15s ease;
   position: relative;
   overflow: hidden;
@@ -49,7 +49,7 @@ const resolvedIcon = computed(() => {
 }
 
 .card:hover {
-  border-color: var(--k-color-border, rgba(82, 82, 89, 0.8));
+  border-color: var(--fg3);
 }
 
 /* 底部指示条 - 直角风格 */
@@ -68,7 +68,7 @@ const resolvedIcon = computed(() => {
 .stat-icon {
   width: 32px;
   height: 32px;
-  border-radius: 4px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,12 +78,12 @@ const resolvedIcon = computed(() => {
   color: var(--stat-color);
 }
 
-/* 数值 - 等宽字体，更克制的颜色 */
+/* 数值 - 等宽字体 */
 .stat-value {
   font-size: 2rem;
   font-weight: 600;
-  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
-  color: var(--fg1, var(--k-color-text));
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace);
+  color: var(--fg1);
   line-height: 1;
   margin-bottom: 0.375rem;
   letter-spacing: -1px;
@@ -91,29 +91,29 @@ const resolvedIcon = computed(() => {
 
 /* 标签 - 次要文字颜色 */
 .stat-label {
-  color: var(--fg3, var(--k-color-text-description));
+  color: var(--fg3);
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-/* 克制的颜色方案 - 暗色调 */
+/* 克制的颜色方案 - 使用 Koishi 变量 */
 .stat-card.blue {
   --stat-color: #58a6ff;
   --stat-color-fade: rgba(88, 166, 255, 0.1);
 }
 .stat-card.orange {
-  --stat-color: #d29922;
-  --stat-color-fade: rgba(210, 153, 34, 0.1);
+  --stat-color: var(--k-color-warning);
+  --stat-color-fade: var(--k-color-warning-fade);
 }
 .stat-card.red {
-  --stat-color: #f85149;
-  --stat-color-fade: rgba(248, 81, 73, 0.1);
+  --stat-color: var(--k-color-danger);
+  --stat-color-fade: var(--k-color-danger-fade);
 }
 .stat-card.green {
-  --stat-color: #3fb950;
-  --stat-color-fade: rgba(63, 185, 80, 0.1);
+  --stat-color: var(--k-color-success);
+  --stat-color-fade: var(--k-color-success-fade);
 }
 
 /* 骨架屏 */
@@ -121,9 +121,9 @@ const resolvedIcon = computed(() => {
   height: 32px;
   width: 60%;
   background: linear-gradient(90deg,
-    var(--bg3, #313136) 25%,
-    var(--bg2, #252529) 50%,
-    var(--bg3, #313136) 75%
+    var(--bg3) 25%,
+    var(--k-card-bg) 50%,
+    var(--bg3) 75%
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.2s infinite;

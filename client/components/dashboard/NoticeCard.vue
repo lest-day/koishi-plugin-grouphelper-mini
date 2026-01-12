@@ -17,12 +17,12 @@ defineProps<{
 </script>
 
 <style scoped>
-/* GitHub Dimmed 风格公告卡片 */
+/* GitHub Dimmed 风格公告卡片 - 使用 Koishi 变量 */
 .card {
-  background: var(--bg2, var(--k-card-bg));
+  background: var(--k-card-bg);
   border-radius: 6px;
   padding: 1rem 1.25rem;
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border: 1px solid var(--k-color-border);
   transition: border-color 0.15s ease;
   height: 100%;
   min-height: 320px;
@@ -33,12 +33,12 @@ defineProps<{
 }
 
 .card:hover {
-  border-color: var(--k-color-border, rgba(82, 82, 89, 0.8));
+  border-color: var(--fg3);
 }
 
 /* 左侧强调边框 - 直角 */
 .notice-card {
-  border-left: 3px solid var(--k-color-primary, #7459ff);
+  border-left: 3px solid var(--k-color-primary);
 }
 
 .card-header {
@@ -46,7 +46,7 @@ defineProps<{
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.875rem;
-  color: var(--fg1, var(--k-color-text));
+  color: var(--fg1);
   font-weight: 500;
 }
 
@@ -56,7 +56,7 @@ defineProps<{
 }
 
 .notice-content {
-  color: var(--fg2, var(--k-color-text));
+  color: var(--fg2);
   line-height: 1.6;
   font-size: 0.85rem;
   flex: 1;
@@ -69,7 +69,7 @@ defineProps<{
 }
 
 .notice-content :deep(a) {
-  color: var(--k-color-primary, #7459ff);
+  color: var(--k-color-primary);
   text-decoration: none;
 }
 
@@ -78,15 +78,15 @@ defineProps<{
 }
 
 .notice-content :deep(code) {
-  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
   font-size: 0.8rem;
-  background: var(--bg3, var(--k-color-bg-2));
+  background: var(--bg3);
   padding: 0.125rem 0.375rem;
   border-radius: 3px;
 }
 
 .notice-content :deep(pre) {
-  background: var(--bg1, var(--k-color-bg-1));
+  background: var(--bg1);
   padding: 0.75rem;
   border-radius: 4px;
   overflow-x: auto;

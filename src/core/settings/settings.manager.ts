@@ -334,15 +334,26 @@ export class SettingsManager {
   async update(updates: Partial<PluginSettings>): Promise<void> {
     // 更新内存中的设置
     this._settings = this.deepMerge(this._settings, updates)
-    
+
     // 保存到文件（只保存与默认值不同的部分）
     const toSave = this.getDiff(DEFAULT_SETTINGS, this._settings)
-    
-    // 清空并重新设置
+
+    // 获取当前 store 中的所有键
+    const currentKeys = Object.keys(this.store.getAll())
+    const newKeys = Object.keys(toSave)
+
+    // 删除不再需要的键（值恢复为默认值的情况）
+    for (const key of currentKeys) {
+      if (!newKeys.includes(key)) {
+        this.store.delete(key as keyof PluginSettings)
+      }
+    }
+
+    // 设置新值
     for (const key of Object.keys(toSave) as Array<keyof PluginSettings>) {
       this.store.set(key, (toSave as any)[key])
     }
-    
+
     await this.store.flush()
   }
 

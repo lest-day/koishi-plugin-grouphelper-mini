@@ -173,8 +173,12 @@ export class WarnModule extends BaseModule {
     const userId = String(user).split(':')[1]
     const warnCount = this.addWarn(session.guildId, userId, count)
 
-    // 检查是否达到警告阈值
-    if (warnCount >= this.config.warnLimit) {
+    // 获取警告阈值：优先使用分群配置，否则使用全局配置
+    const groupConfig = this.getGroupConfig(session.guildId)
+    const warnLimit = groupConfig?.warnLimit ?? this.config.warnLimit
+
+    // 检查是否达到警告阈值（阈值为0时表示每次警告都触发自动禁言）
+    if (warnLimit === 0 || warnCount >= warnLimit) {
       return await this.executeAutoBan(session, userId, warnCount, count)
     } else {
       await this.ctx.groupHelper.pushMessage(

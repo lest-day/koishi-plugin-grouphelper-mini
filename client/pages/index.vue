@@ -79,22 +79,23 @@ const menuItems = [
 <style scoped>
 /* ========================================
    GitHub Dimmed / Vercel 风格主布局
+   使用 Koishi 全局 CSS 变量
    ======================================== */
 
 .grouphelper-app {
-  background: var(--bg1, #1e1e20);
+  background: var(--bg1);
   height: 100vh;
   min-height: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--gh-font-sans, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif);
 }
 
-/* 顶部导航 - 更紧凑 */
+/* 顶部导航 - 紧凑专业 */
 .top-nav {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--bg2, #252529);
-  border-bottom: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  background: var(--k-card-bg);
+  border-bottom: 1px solid var(--k-color-divider);
   height: 48px;
 }
 
@@ -118,18 +119,19 @@ const menuItems = [
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  color: var(--fg1, rgba(255, 255, 245, 0.9));
+  color: var(--fg1);
   text-transform: uppercase;
 }
 
+/* 版本号 - 等宽字体 */
 .version-text {
   font-size: 10px;
-  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
-  color: var(--fg3, rgba(255, 255, 245, 0.4));
-  background: var(--bg3, #313136);
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
+  color: var(--fg3);
+  background: var(--bg3);
   padding: 1px 5px;
   border-radius: 3px;
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border: 1px solid var(--k-color-divider);
 }
 
 .nav-tabs {
@@ -144,22 +146,23 @@ const menuItems = [
   gap: 5px;
   padding: 6px 10px;
   cursor: pointer;
-  color: var(--fg3, rgba(255, 255, 245, 0.4));
+  color: var(--fg3);
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  transition: all 0.12s ease;
+  transition: color 0.12s ease, background-color 0.12s ease;
+  border: 1px solid transparent;
 }
 
 .nav-tab:hover {
-  color: var(--fg2, rgba(255, 255, 245, 0.6));
-  background: var(--bg3, #313136);
+  color: var(--fg2);
+  background: var(--bg3);
 }
 
 .nav-tab.active {
-  color: var(--fg1, rgba(255, 255, 245, 0.9));
-  background: var(--bg3, #313136);
-  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  color: var(--fg1);
+  background: var(--bg3);
+  border-color: var(--k-color-divider);
 }
 
 .tab-icon {
@@ -200,12 +203,12 @@ const menuItems = [
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(110, 118, 129, 0.3);
+  background-color: var(--k-color-border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(110, 118, 129, 0.5);
+  background-color: var(--fg3);
 }
 
 ::-webkit-scrollbar-corner {
@@ -213,21 +216,14 @@ const menuItems = [
 }
 
 /* ========================================
-   全局动画规范 - 平衡设计
-   ========================================
-
-   原则：
-   1. 交互反馈 (hover/focus) - 快速响应 0.12s-0.15s
-   2. 状态切换 (toggle/select) - 中等速度 0.15s-0.2s
-   3. 入场动画 - 仅用于重要元素，适度克制
-   4. 避免 - 过长延迟、弹跳效果、过度位移
-*/
+   全局动画规范 - 克制平衡
+   ======================================== */
 
 /* 统一的过渡时间变量 */
 :root {
-  --transition-fast: 0.12s ease;
-  --transition-normal: 0.15s ease;
-  --transition-slow: 0.2s ease;
+  --gh-transition-fast: 0.12s ease;
+  --gh-transition-normal: 0.15s ease;
+  --gh-transition-slow: 0.2s ease;
 }
 
 /* 减少运动偏好支持 */

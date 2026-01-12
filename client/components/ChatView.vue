@@ -1049,7 +1049,7 @@ const renderMessage = (msg: ChatMessage) => {
 .chat-view {
   height: 100%;
   display: flex;
-  background: var(--bg1, #1e1e20);
+  background: var(--bg1);
   border: 1px solid var(--k-color-divider);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -1062,7 +1062,7 @@ const renderMessage = (msg: ChatMessage) => {
   border-right: 1px solid var(--k-color-divider);
   display: flex;
   flex-direction: column;
-  background: var(--bg2, #252529);
+  background: var(--bg2);
 }
 
 .sidebar-header {
@@ -1077,13 +1077,13 @@ const renderMessage = (msg: ChatMessage) => {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  color: var(--fg1);
   letter-spacing: -0.01em;
 }
 
 .status-indicator {
   font-size: 11px;
-  color: var(--status-online);
+  color: var(--k-color-success);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -1095,7 +1095,7 @@ const renderMessage = (msg: ChatMessage) => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--status-online);
+  background: var(--k-color-success);
   /* 实心小圆点，无发光效果 */
 }
 
@@ -1108,7 +1108,7 @@ const renderMessage = (msg: ChatMessage) => {
 .empty-sessions {
   padding: 32px 16px;
   text-align: center;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   font-size: 12px;
 }
 
@@ -1117,28 +1117,28 @@ const renderMessage = (msg: ChatMessage) => {
   padding: 10px 12px;
   gap: 10px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background-color 0.15s ease;
   border-left: 2px solid transparent;
 }
 
 .session-item:hover {
-  background: var(--bg3, #313136);
+  background: var(--bg3);
 }
 
 .session-item.active {
-  background: var(--k-color-primary-fade, rgba(116, 89, 255, 0.1));
-  border-left-color: var(--k-color-primary, #7459ff);
+  background: var(--k-color-primary-fade);
+  border-left-color: var(--k-color-primary);
 }
 
 .session-icon {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--bg3, #313136);
+  background: var(--bg3);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   flex-shrink: 0;
   overflow: hidden;
   border: 1px solid var(--k-color-divider);
@@ -1161,7 +1161,7 @@ const renderMessage = (msg: ChatMessage) => {
 
 .session-name {
   font-weight: 500;
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  color: var(--fg1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1170,7 +1170,7 @@ const renderMessage = (msg: ChatMessage) => {
 
 .session-preview {
   font-size: 11px;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1186,12 +1186,12 @@ const renderMessage = (msg: ChatMessage) => {
 
 .session-meta .time {
   font-size: 10px;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   font-family: var(--font-mono);
 }
 
 .badge {
-  background: var(--status-danger);
+  background: var(--k-color-danger);
   color: #fff;
   font-size: 10px;
   font-family: var(--font-mono);
@@ -1207,7 +1207,7 @@ const renderMessage = (msg: ChatMessage) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--bg1, #1e1e20);
+  background: var(--bg1);
 }
 
 .empty-chat {
@@ -1215,7 +1215,7 @@ const renderMessage = (msg: ChatMessage) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
 }
 
 .empty-content {
@@ -1226,13 +1226,13 @@ const renderMessage = (msg: ChatMessage) => {
   margin: 12px 0 8px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--fg2, rgba(255, 255, 245, .6));
+  color: var(--fg2);
 }
 
 .empty-content p {
   margin: 0;
   font-size: 12px;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
 }
 
 .large-icon {
@@ -1253,7 +1253,7 @@ const renderMessage = (msg: ChatMessage) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg2, #252529);
+  background: var(--bg2);
 }
 
 .header-info {
@@ -1266,7 +1266,7 @@ const renderMessage = (msg: ChatMessage) => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--bg3, #313136);
+  background: var(--bg3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1283,21 +1283,21 @@ const renderMessage = (msg: ChatMessage) => {
 .header-name {
   font-weight: 600;
   font-size: 14px;
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  color: var(--fg1);
 }
 
 .header-id {
   font-size: 11px;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   font-family: var(--font-mono);
-  background: var(--bg3, #313136);
+  background: var(--bg3);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
 }
 
 .platform-tag {
-  background: var(--bg3, #313136);
-  color: var(--fg2, rgba(255, 255, 245, .6));
+  background: var(--bg3);
+  color: var(--fg2);
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   font-size: 10px;
@@ -1369,7 +1369,7 @@ const renderMessage = (msg: ChatMessage) => {
   display: flex;
   gap: 8px;
   font-size: 11px;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   align-items: baseline;
 }
 
@@ -1384,7 +1384,7 @@ const renderMessage = (msg: ChatMessage) => {
 
 .username {
   font-weight: 500;
-  color: var(--fg2, rgba(255, 255, 245, .6));
+  color: var(--fg2);
 }
 
 .timestamp {
@@ -1393,10 +1393,10 @@ const renderMessage = (msg: ChatMessage) => {
 }
 
 .message-bubble {
-  background: var(--bg3, #313136);
+  background: var(--bg3);
   padding: 10px 12px;
   border-radius: var(--radius-md);
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  color: var(--fg1);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
@@ -1429,13 +1429,13 @@ const renderMessage = (msg: ChatMessage) => {
 .message-bubble :deep(.msg-img.error) {
   width: 80px;
   height: 50px;
-  background: var(--bg3, #313136);
-  border: 1px dashed var(--status-danger);
+  background: var(--bg3);
+  border: 1px dashed var(--k-color-danger);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--status-danger);
+  color: var(--k-color-danger);
   font-size: 10px;
 }
 
@@ -1450,8 +1450,8 @@ const renderMessage = (msg: ChatMessage) => {
 }
 
 .message-bubble :deep(.msg-at) {
-  color: var(--k-color-primary, #7459ff);
-  background: var(--k-color-primary-fade, rgba(116, 89, 255, 0.1));
+  color: var(--k-color-primary);
+  background: var(--k-color-primary-fade);
   padding: 1px 4px;
   border-radius: var(--radius-sm);
   margin: 0 1px;
@@ -1462,18 +1462,18 @@ const renderMessage = (msg: ChatMessage) => {
 
 .message-bubble :deep(.msg-face) {
   display: inline-block;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   font-size: 12px;
 }
 
 .message-bubble :deep(.msg-quote) {
-  background: var(--bg2, #252529);
-  border-left: 2px solid var(--k-color-primary, #7459ff);
+  background: var(--bg2);
+  border-left: 2px solid var(--k-color-primary);
   padding: 6px 10px;
   margin-bottom: 6px;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   font-size: 11px;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1481,7 +1481,7 @@ const renderMessage = (msg: ChatMessage) => {
 
 .message-bubble :deep(.msg-quote .quote-user) {
   font-weight: 600;
-  color: var(--k-color-primary, #7459ff);
+  color: var(--k-color-primary);
   font-size: 10px;
 }
 
@@ -1506,7 +1506,7 @@ const renderMessage = (msg: ChatMessage) => {
 }
 
 .message-row.self .message-bubble {
-  background: var(--k-color-primary, #7459ff);
+  background: var(--k-color-primary);
   color: #fff;
   border-color: transparent;
 }
@@ -1514,7 +1514,7 @@ const renderMessage = (msg: ChatMessage) => {
 /* Input Area */
 .chat-input-area {
   padding: 12px 16px;
-  background: var(--bg2, #252529);
+  background: var(--bg2);
   border-top: 1px solid var(--k-color-divider);
   display: flex;
   flex-direction: column;
@@ -1562,7 +1562,7 @@ const renderMessage = (msg: ChatMessage) => {
 }
 
 .remove-image-btn:hover {
-  background: var(--status-danger);
+  background: var(--k-color-danger);
 }
 
 .input-row {
@@ -1577,8 +1577,8 @@ const renderMessage = (msg: ChatMessage) => {
   padding: 10px 12px;
   border: 1px solid var(--k-color-divider);
   border-radius: var(--radius-md);
-  background: var(--bg1, #1e1e20);
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  background: var(--bg1);
+  color: var(--fg1);
   resize: none;
   font-family: var(--font-sans);
   font-size: 13px;
@@ -1586,25 +1586,25 @@ const renderMessage = (msg: ChatMessage) => {
 
 .chat-input:focus {
   outline: none;
-  border-color: var(--k-color-primary, #7459ff);
+  border-color: var(--k-color-primary);
 }
 
 .chat-input::placeholder {
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
 }
 
 .send-btn {
   width: 40px;
   height: 40px;
   border-radius: var(--radius-md);
-  background: var(--k-color-primary, #7459ff);
+  background: var(--k-color-primary);
   color: #fff;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s ease;
 }
 
 .send-btn:hover {
@@ -1612,8 +1612,8 @@ const renderMessage = (msg: ChatMessage) => {
 }
 
 .send-btn:disabled {
-  background: var(--bg3, #313136);
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  background: var(--bg3);
+  color: var(--fg3);
   cursor: not-allowed;
 }
 
@@ -1637,7 +1637,7 @@ const renderMessage = (msg: ChatMessage) => {
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--fg3, rgba(255, 255, 245, .4));
+  background-color: var(--fg3);
 }
 
 /* Connect Group Button */
@@ -1652,7 +1652,7 @@ const renderMessage = (msg: ChatMessage) => {
   border: 1px dashed var(--k-color-divider);
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1660,13 +1660,13 @@ const renderMessage = (msg: ChatMessage) => {
   gap: 6px;
   font-size: 12px;
   font-family: var(--font-sans);
-  transition: all 0.15s;
+  transition: all 0.15s ease;
 }
 
 .connect-btn:hover {
-  border-color: var(--k-color-primary, #7459ff);
-  color: var(--k-color-primary, #7459ff);
-  background: var(--k-color-primary-fade, rgba(116, 89, 255, 0.1));
+  border-color: var(--k-color-primary);
+  color: var(--k-color-primary);
+  background: var(--k-color-primary-fade);
 }
 
 /* Connect Dialog */
@@ -1685,7 +1685,7 @@ const renderMessage = (msg: ChatMessage) => {
 }
 
 .connect-dialog {
-  background: var(--bg2, #252529);
+  background: var(--bg2);
   border-radius: var(--radius-lg);
   width: 360px;
   max-width: 90%;
@@ -1705,7 +1705,7 @@ const renderMessage = (msg: ChatMessage) => {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  color: var(--fg1);
 }
 
 .close-btn {
@@ -1713,19 +1713,19 @@ const renderMessage = (msg: ChatMessage) => {
   height: 24px;
   border: none;
   background: transparent;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  transition: background 0.15s;
+  transition: background-color 0.15s ease;
 }
 
 .close-btn:hover {
-  background: var(--bg3, #313136);
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  background: var(--bg3);
+  color: var(--fg1);
 }
 
 .dialog-body {
@@ -1743,7 +1743,7 @@ const renderMessage = (msg: ChatMessage) => {
 
 .form-group label {
   font-size: 11px;
-  color: var(--fg2, rgba(255, 255, 245, .6));
+  color: var(--fg2);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -1754,8 +1754,8 @@ const renderMessage = (msg: ChatMessage) => {
   padding: 8px 10px;
   border: 1px solid var(--k-color-divider);
   border-radius: var(--radius-md);
-  background: var(--bg1, #1e1e20);
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  background: var(--bg1);
+  color: var(--fg1);
   font-size: 13px;
   font-family: var(--font-sans);
 }
@@ -1770,18 +1770,18 @@ const renderMessage = (msg: ChatMessage) => {
 }
 
 .form-group select option {
-  background: var(--bg1, #1e1e20);
+  background: var(--bg1);
   color: var(--fg1);
 }
 
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: var(--k-color-primary, #7459ff);
+  border-color: var(--k-color-primary);
 }
 
 .form-group input::placeholder {
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
 }
 
 .radio-group {
@@ -1794,12 +1794,12 @@ const renderMessage = (msg: ChatMessage) => {
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  color: var(--fg2, rgba(255, 255, 245, .6));
+  color: var(--fg2);
   font-size: 13px;
 }
 
 .radio-label input[type="radio"] {
-  accent-color: var(--k-color-primary, #7459ff);
+  accent-color: var(--k-color-primary);
 }
 
 .dialog-footer {
@@ -1824,17 +1824,17 @@ const renderMessage = (msg: ChatMessage) => {
 .cancel-btn {
   border: 1px solid var(--k-color-divider);
   background: transparent;
-  color: var(--fg2, rgba(255, 255, 245, .6));
+  color: var(--fg2);
 }
 
 .cancel-btn:hover {
-  background: var(--bg3, #313136);
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  background: var(--bg3);
+  color: var(--fg1);
 }
 
 .confirm-btn {
   border: none;
-  background: var(--k-color-primary, #7459ff);
+  background: var(--k-color-primary);
   color: #fff;
 }
 
@@ -1843,8 +1843,8 @@ const renderMessage = (msg: ChatMessage) => {
 }
 
 .confirm-btn:disabled {
-  background: var(--bg3, #313136);
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  background: var(--bg3);
+  color: var(--fg3);
   cursor: not-allowed;
 }
 
@@ -1854,7 +1854,7 @@ const renderMessage = (msg: ChatMessage) => {
   border-left: 1px solid var(--k-color-divider);
   display: flex;
   flex-direction: column;
-  background: var(--bg2, #252529);
+  background: var(--bg2);
   transition: width 0.2s ease;
 }
 
@@ -1883,7 +1883,7 @@ const renderMessage = (msg: ChatMessage) => {
 .members-header h3 {
   margin: 0;
   font-size: 11px;
-  color: var(--fg2, rgba(255, 255, 245, .6));
+  color: var(--fg2);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -1892,8 +1892,8 @@ const renderMessage = (msg: ChatMessage) => {
 .member-count {
   font-size: 10px;
   font-family: var(--font-mono);
-  background: var(--bg3, #313136);
-  color: var(--fg2, rgba(255, 255, 245, .6));
+  background: var(--bg3);
+  color: var(--fg2);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--k-color-divider);
@@ -1904,19 +1904,19 @@ const renderMessage = (msg: ChatMessage) => {
   height: 20px;
   border: none;
   background: transparent;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 9px;
   border-radius: var(--radius-sm);
-  transition: background 0.15s;
+  transition: background-color 0.15s ease;
 }
 
 .collapse-btn:hover {
-  background: var(--bg3, #313136);
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  background: var(--bg3);
+  color: var(--fg1);
 }
 
 .members-search {
@@ -1929,19 +1929,19 @@ const renderMessage = (msg: ChatMessage) => {
   padding: 6px 8px;
   border: 1px solid var(--k-color-divider);
   border-radius: var(--radius-md);
-  background: var(--bg1, #1e1e20);
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  background: var(--bg1);
+  color: var(--fg1);
   font-size: 11px;
   font-family: var(--font-sans);
 }
 
 .members-search .search-input:focus {
   outline: none;
-  border-color: var(--k-color-primary, #7459ff);
+  border-color: var(--k-color-primary);
 }
 
 .members-search .search-input::placeholder {
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
 }
 
 .members-list {
@@ -1953,7 +1953,7 @@ const renderMessage = (msg: ChatMessage) => {
 .member-group-header {
   padding: 8px 10px 4px;
   font-size: 10px;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   font-weight: 600;
   text-transform: uppercase;
   display: flex;
@@ -1974,20 +1974,20 @@ const renderMessage = (msg: ChatMessage) => {
   gap: 8px;
   padding: 5px 10px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background-color 0.15s ease;
 }
 
 .member-item:hover {
-  background: var(--bg3, #313136);
+  background: var(--bg3);
 }
 
 .member-item.owner .member-name {
-  color: var(--status-warning);
+  color: var(--k-color-warning);
   font-weight: 600;
 }
 
 .member-item.admin .member-name {
-  color: var(--status-online);
+  color: var(--k-color-success);
   font-weight: 500;
 }
 
@@ -1997,7 +1997,7 @@ const renderMessage = (msg: ChatMessage) => {
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: var(--bg3, #313136);
+  background: var(--bg3);
   border: 1px solid var(--k-color-divider);
 }
 
@@ -2014,7 +2014,7 @@ const renderMessage = (msg: ChatMessage) => {
 
 .member-name {
   font-size: 12px;
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  color: var(--fg1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2022,7 +2022,7 @@ const renderMessage = (msg: ChatMessage) => {
 
 .member-title {
   font-size: 10px;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2036,14 +2036,14 @@ const renderMessage = (msg: ChatMessage) => {
   justify-content: center;
   padding: 24px;
   gap: 6px;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   font-size: 11px;
 }
 
 .no-members {
   padding: 24px;
   text-align: center;
-  color: var(--fg3, rgba(255, 255, 245, .4));
+  color: var(--fg3);
   font-size: 11px;
 }
 
@@ -2067,7 +2067,7 @@ const renderMessage = (msg: ChatMessage) => {
 .context-menu {
   position: fixed;
   z-index: 10000;
-  background: var(--bg2, #252529);
+  background: var(--bg2);
   border: 1px solid var(--k-color-divider);
   border-radius: var(--radius-md);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
@@ -2081,21 +2081,21 @@ const renderMessage = (msg: ChatMessage) => {
   gap: 8px;
   padding: 7px 12px;
   cursor: pointer;
-  color: var(--fg1, rgba(255, 255, 245, .9));
+  color: var(--fg1);
   font-size: 12px;
-  transition: background 0.1s;
+  transition: background-color 0.1s ease;
 }
 
 .context-menu-item:hover {
-  background: var(--bg3, #313136);
+  background: var(--bg3);
 }
 
 .context-menu-item.danger {
-  color: var(--status-danger);
+  color: var(--k-color-danger);
 }
 
 .context-menu-item.danger:hover {
-  background: rgba(248, 81, 73, 0.1);
+  background: var(--k-color-danger-fade);
 }
 
 .menu-icon {

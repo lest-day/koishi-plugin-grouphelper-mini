@@ -30,6 +30,8 @@ export interface GroupConfig {
   goodbyeEnabled?: boolean
   levelLimit?: number
   leaveCooldown?: number
+  /** 警告次数限制（覆盖全局设置） */
+  warnLimit?: number
   dice?: {
     enabled: boolean
     lengthLimit: number

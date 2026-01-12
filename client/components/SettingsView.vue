@@ -45,8 +45,8 @@
             <div class="form-row">
               <label class="form-label">警告次数限制</label>
               <div class="form-control">
-                <el-input-number v-model="settings.warnLimit" :min="1" :max="99" size="small" />
-                <span class="form-hint">达到此次数后触发自动禁言</span>
+                <el-input-number v-model="settings.warnLimit" :min="0" :max="99" size="small" />
+                <span class="form-hint">达到此次数后触发自动禁言（设为0表示每次警告都立即禁言）</span>
               </div>
             </div>
             <div class="form-row">
