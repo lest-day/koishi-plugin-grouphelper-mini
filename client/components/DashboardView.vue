@@ -4,7 +4,7 @@
     <div class="hero-section">
       <div class="hero-content">
         <div class="hero-icon">
-          <k-icon name="activity" />
+          <k-icon name="grouphelper:logo" />
         </div>
         <div class="hero-text">
           <h1>GroupHelper</h1>
@@ -20,120 +20,76 @@
           </div>
         </div>
       </div>
+      <div class="hero-actions">
+        <div class="button is-primary" @click="toggleEditMode">
+          <k-icon :name="isEditing ? 'check' : 'edit-2'" />
+          {{ isEditing ? '完成' : '编辑布局' }}
+        </div>
+      </div>
     </div>
 
     <!-- Main Grid -->
-    <div class="bento-grid">
-      <!-- Statistics Cards -->
-      <div class="card stat-card blue">
-        <div class="stat-icon">
-          <k-icon name="users" />
-        </div>
-        <div class="stat-content">
-          <div v-if="loading" class="skeleton skeleton-text"></div>
-          <div v-else class="stat-value">{{ stats.totalGroups }}</div>
-          <div class="stat-label">已配置群组</div>
-        </div>
-      </div>
-
-      <div class="card stat-card orange">
-        <div class="stat-icon">
-          <k-icon name="alert-triangle" />
-        </div>
-        <div class="stat-content">
-          <div v-if="loading" class="skeleton skeleton-text"></div>
-          <div v-else class="stat-value">{{ stats.totalWarns }}</div>
-          <div class="stat-label">警告记录</div>
-        </div>
-      </div>
-
-      <div class="card stat-card red">
-        <div class="stat-icon">
-          <k-icon name="user-x" />
-        </div>
-        <div class="stat-content">
-          <div v-if="loading" class="skeleton skeleton-text"></div>
-          <div v-else class="stat-value">{{ stats.totalBlacklisted }}</div>
-          <div class="stat-label">黑名单用户</div>
-        </div>
-      </div>
-
-      <div class="card stat-card green">
-        <div class="stat-icon">
-          <k-icon name="rss" />
-        </div>
-        <div class="stat-content">
-          <div v-if="loading" class="skeleton skeleton-text"></div>
-          <div v-else class="stat-value">{{ stats.totalSubscriptions }}</div>
-          <div class="stat-label">活跃订阅</div>
-        </div>
-      </div>
-
-
-      <!-- Notice Card -->
-      <div class="card notice-card" v-if="notice">
-        <div class="card-header">
-          <k-icon name="bell" />
-          <h3>最新公告</h3>
-        </div>
-        <div class="notice-content">
-          <k-markdown :source="notice" />
-        </div>
-      </div>
-
-      <!-- Version Info -->
-      <div class="card version-card">
-        <div class="card-header">
-          <k-icon name="tag" />
-          <h3>版本信息</h3>
-        </div>
-        <div class="version-list">
-          <div class="version-row">
-            <span class="v-label"><k-icon name="box" /> 当前版本</span>
-            <k-tag type="primary">{{ stats.version || '...' }}</k-tag>
+    <div class="bento-grid" :class="{ 'is-editing': isEditing }">
+      <div
+        v-for="(item, index) in layout"
+        :key="item.id"
+        class="grid-item"
+        :style="{ gridColumn: `span ${item.span}`, animationDelay: `${Math.min(index * 0.03, 0.3)}s` }"
+        :draggable="isEditing"
+        @dragstart="dragStart($event, index)"
+        @dragover.prevent
+        @dragenter="dragEnter(index)"
+        @drop="drop($event)"
+        @dragend="dragEnd($event)"
+      >
+        <!-- 编辑模式遮罩 -->
+        <div class="edit-overlay" v-if="isEditing">
+          <div class="drag-handle">
+            <k-icon name="move" />
           </div>
-          <div class="version-row">
-            <span class="v-label"><k-icon name="package" /> NPM 最新</span>
-            <k-tag :type="versions.npm ? 'success' : 'info'">{{ versions.npm || '加载中...' }}</k-tag>
-          </div>
-          <div class="version-row">
-            <span class="v-label">GitHub Main</span>
-            <k-tag :type="versions.main ? 'warning' : 'info'">{{ versions.main || '加载中...' }}</k-tag>
-          </div>
-          <div class="version-row">
-            <span class="v-label"><k-icon name="git-branch" /> GitHub Dev</span>
-            <k-tag :type="versions.dev ? 'danger' : 'info'">{{ versions.dev || '加载中...' }}</k-tag>
+          <div class="remove-btn" v-if="item.type !== 'StatCard'" @click="removeWidget(index)">
+            <k-icon name="trash-2" />
           </div>
         </div>
+
+        <!-- 动态组件渲染 -->
+        <component
+          :is="getComponent(item.type)"
+          v-bind="resolveProps(item)"
+        />
       </div>
 
-      <!-- Recent Updates -->
-      <div class="card updates-card">
-        <div class="card-header">
-          <k-icon name="clock" />
-          <h3>最近更新 (Dev)</h3>
+      <!-- 添加组件占位符 -->
+      <div v-if="isEditing" class="grid-item add-widget-placeholder" @click="showAddModal = true">
+        <k-icon name="plus" />
+        <span>添加组件</span>
+      </div>
+    </div>
+
+    <!-- 添加组件模态框 -->
+    <div class="modal-overlay" v-if="showAddModal" @click="showAddModal = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>添加组件</h3>
+          <div class="close-btn" @click="showAddModal = false">
+            <k-icon name="x" />
+          </div>
         </div>
-        <div class="commits-list">
-          <div v-if="commitsError" class="error-text">
-            <k-icon name="alert-circle" />
-            <span>无法获取更新记录: {{ commitsError }}</span>
-          </div>
-          <div v-else-if="commits.length === 0" class="loading-text">
-            <k-icon name="loader" class="spin" />
-            <span>加载中...</span>
-          </div>
-          <a v-else v-for="commit in commits" :key="commit.sha" :href="commit.html_url" target="_blank" class="commit-item">
-            <div class="commit-avatar">
-              <img :src="commit.author?.avatar_url || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'" />
+        <div class="widget-list">
+          <div
+            v-for="widget in availableWidgets"
+            :key="widget.type"
+            class="widget-option"
+            @click="addWidget(widget)"
+          >
+            <div class="widget-preview">
+              <k-icon :name="widget.icon" />
             </div>
-            <div class="commit-info">
-              <div class="commit-msg">{{ commit.commit.message }}</div>
-              <div class="commit-meta">
-                <span>{{ commit.commit.author.name }}</span>
-                <span>{{ formatRelativeTime(commit.commit.author.date) }}</span>
-              </div>
+            <div class="widget-info">
+              <h4>{{ widget.name }}</h4>
+              <p>{{ widget.description }}</p>
             </div>
-          </a>
+          </div>
         </div>
       </div>
     </div>
@@ -143,25 +99,43 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { statsApi } from '../api'
+import type { ChartData } from '../api'
 
-defineEmits(['change-view'])
+// 同步引入组件（修复生产构建问题）
+import StatCard from './dashboard/StatCard.vue'
+import NoticeCard from './dashboard/NoticeCard.vue'
+import TrendChartCard from './dashboard/TrendChartCard.vue'
+import DistChartCard from './dashboard/DistChartCard.vue'
+import RankChartCard from './dashboard/RankChartCard.vue'
+import VersionCard from './dashboard/VersionCard.vue'
+import UpdatesCard from './dashboard/UpdatesCard.vue'
 
-interface DashboardStats {
-  totalGroups: number
-  totalWarns: number
-  totalBlacklisted: number
-  totalSubscriptions: number
-  timestamp: number
-  version?: string
+const componentMap: Record<string, any> = {
+  StatCard,
+  NoticeCard,
+  TrendChartCard,
+  DistChartCard,
+  RankChartCard,
+  VersionCard,
+  UpdatesCard
 }
 
+const getComponent = (type: string) => componentMap[type]
+
+// --- 数据状态 ---
 const loading = ref(false)
-const error = ref('')
 const notice = ref('')
 const commits = ref<any[]>([])
 const commitsError = ref('')
-
-const stats = reactive<DashboardStats>({
+const chartLoading = ref(false)
+const chartData = reactive<ChartData>({
+  trend: [],
+  distribution: [],
+  successRate: { success: 0, fail: 0 },
+  guildRank: [],
+  userRank: []
+})
+const stats = reactive({
   totalGroups: 0,
   totalWarns: 0,
   totalBlacklisted: 0,
@@ -169,225 +143,380 @@ const stats = reactive<DashboardStats>({
   timestamp: 0,
   version: ''
 })
+const versions = reactive({ npm: '', main: '', dev: '' })
 
-const versions = reactive({
-  npm: '',
-  main: '',
-  dev: ''
-})
+// --- 布局系统 ---
+interface WidgetConfig {
+  id: string
+  type: string
+  span: number
+  props?: Record<string, any>
+  dynamicProps?: Record<string, string> // key: propName, value: statePath
+}
 
+const isEditing = ref(false)
+const showAddModal = ref(false)
+const dragIndex = ref<number | null>(null)
+
+// 默认布局 - 包含四个统计卡片和公告
+const defaultLayout: WidgetConfig[] = [
+  { id: 'stat-groups', type: 'StatCard', span: 1, props: { type: 'blue', icon: 'octicons.people', label: '已配置群组' }, dynamicProps: { value: 'stats.totalGroups', loading: 'loading' } },
+  { id: 'stat-warns', type: 'StatCard', span: 1, props: { type: 'orange', icon: 'octicons.alert', label: '警告记录' }, dynamicProps: { value: 'stats.totalWarns', loading: 'loading' } },
+  { id: 'stat-blacklist', type: 'StatCard', span: 1, props: { type: 'red', icon: 'octicons.blocked', label: '黑名单用户' }, dynamicProps: { value: 'stats.totalBlacklisted', loading: 'loading' } },
+  { id: 'stat-subscriptions', type: 'StatCard', span: 1, props: { type: 'green', icon: 'octicons.broadcast', label: '活跃订阅' }, dynamicProps: { value: 'stats.totalSubscriptions', loading: 'loading' } },
+  { id: 'notice', type: 'NoticeCard', span: 2, dynamicProps: { content: 'notice' } }
+]
+
+const layout = ref<WidgetConfig[]>(loadLayout())
+
+function loadLayout() {
+  const saved = localStorage.getItem('gh-dashboard-layout')
+  if (saved) {
+    try {
+      // 合并默认配置，防止组件改名后丢失
+      const parsed = JSON.parse(saved)
+      // 迁移：将 NoticeCard 的 span 从 4 改为 2，并迁移图标到 Octicons
+      const iconMigration: Record<string, string> = {
+        'users': 'octicons.people',
+        'alert-triangle': 'octicons.alert',
+        'user-x': 'octicons.blocked',
+        'rss': 'octicons.broadcast'
+      }
+      for (const item of parsed) {
+        if (item.type === 'NoticeCard' && item.span === 4) {
+          item.span = 2
+        }
+        // 迁移 StatCard 图标
+        if (item.type === 'StatCard' && item.props?.icon && iconMigration[item.props.icon]) {
+          item.props.icon = iconMigration[item.props.icon]
+        }
+      }
+      return parsed
+    } catch (e) { console.error(e) }
+  }
+  return JSON.parse(JSON.stringify(defaultLayout))
+}
+
+function saveLayout() {
+  localStorage.setItem('gh-dashboard-layout', JSON.stringify(layout.value))
+}
+
+// 可用组件定义（StatCard 为内置组件，不可手动添加）
+const availableWidgets = [
+  { type: 'NoticeCard', name: '公告卡片', description: '显示公告内容', icon: 'grouphelper:octicons.megaphone', span: 2, defaultDynamicProps: { content: 'notice' } },
+  { type: 'TrendChartCard', name: '趋势图表', description: '显示命令使用趋势', icon: 'grouphelper:octicons.graph', span: 2, defaultDynamicProps: { data: 'chartData.trend', loading: 'chartLoading' } },
+  { type: 'DistChartCard', name: '命令排行', description: '显示命令使用分布', icon: 'grouphelper:octicons.bar-chart', span: 1, defaultDynamicProps: { data: 'chartData.distribution', loading: 'chartLoading' } },
+  { type: 'RankChartCard', name: '群聊排行', description: '显示群聊活跃排行', icon: 'grouphelper:octicons.people', span: 1, defaultProps: { type: 'guild', title: '群聊排行', icon: 'octicons.people' }, defaultDynamicProps: { data: 'chartData.guildRank', loading: 'chartLoading' } },
+  { type: 'RankChartCard', name: '个人排行', description: '显示用户活跃排行', icon: 'grouphelper:octicons.person', span: 1, defaultProps: { type: 'user', title: '个人排行', icon: 'octicons.person' }, defaultDynamicProps: { data: 'chartData.userRank', loading: 'chartLoading' } },
+  { type: 'VersionCard', name: '版本信息', description: '显示版本信息', icon: 'grouphelper:octicons.tag', span: 1, defaultDynamicProps: { stats: 'stats', versions: 'versions' } },
+  { type: 'UpdatesCard', name: '最近更新', description: '显示最近的代码提交', icon: 'grouphelper:octicons.history', span: 2, defaultDynamicProps: { commits: 'commits', error: 'commitsError' } }
+]
+
+// 属性解析
+const resolveProps = (item: WidgetConfig) => {
+  const props: Record<string, any> = { ...item.props }
+  if (item.dynamicProps) {
+    for (const [key, path] of Object.entries(item.dynamicProps)) {
+      props[key] = getNestedValue(path)
+    }
+  }
+  return props
+}
+
+function getNestedValue(path: string) {
+  const parts = path.split('.')
+  // 顶层数据源映射 (注意：ref 需要取 .value)
+  const dataMap: Record<string, any> = {
+    stats,
+    chartData,
+    versions,
+    loading: loading.value,
+    chartLoading: chartLoading.value,
+    notice: notice.value,
+    commits: commits.value,
+    commitsError: commitsError.value
+  }
+
+  if (parts.length === 1) {
+    return dataMap[parts[0]]
+  }
+
+  let current: any = dataMap[parts[0]]
+  for (let i = 1; i < parts.length; i++) {
+    if (current === undefined || current === null) return undefined
+    current = current[parts[i]]
+  }
+  return current
+}
+
+// --- 交互逻辑 ---
+
+function toggleEditMode() {
+  isEditing.value = !isEditing.value
+  if (!isEditing.value) {
+    saveLayout()
+  }
+}
+
+function removeWidget(index: number) {
+  layout.value.splice(index, 1)
+}
+
+function addWidget(widgetTemplate: any) {
+  layout.value.push({
+    id: `widget-${Date.now()}`,
+    type: widgetTemplate.type,
+    span: widgetTemplate.span,
+    props: widgetTemplate.defaultProps,
+    dynamicProps: widgetTemplate.defaultDynamicProps
+  })
+  showAddModal.value = false
+}
+
+// --- 拖拽逻辑 ---
+function dragStart(e: DragEvent, index: number) {
+  dragIndex.value = index
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.dropEffect = 'move'
+    // 稍微延迟一下，避免拖拽开始时元素立即消失的视觉问题
+    setTimeout(() => {
+      if (e.target instanceof HTMLElement) {
+        e.target.style.opacity = '0.5'
+      }
+    }, 0)
+  }
+}
+
+function dragEnter(index: number) {
+  if (dragIndex.value !== null && dragIndex.value !== index) {
+    // 交换位置
+    const item = layout.value[dragIndex.value]
+    layout.value.splice(dragIndex.value, 1)
+    layout.value.splice(index, 0, item)
+    dragIndex.value = index
+  }
+}
+
+function drop(e: DragEvent) {
+  e.preventDefault()
+  if (e.target instanceof HTMLElement) {
+    e.target.style.opacity = '1'
+  }
+  dragIndex.value = null
+  saveLayout()
+}
+
+function dragEnd(e: DragEvent) {
+  if (e.target instanceof HTMLElement) {
+    e.target.style.opacity = '1'
+  }
+  dragIndex.value = null
+}
+
+// --- 数据加载逻辑 (保持原有) ---
 const loadNotice = async () => {
   try {
-    // 添加时间戳参数防止浏览器缓存
     const timestamp = Date.now()
-    const res = await fetch(`https://raw.githubusercontent.com/Camvanaa/koishi-plugin-grouphelper/dev/notice.md?t=${timestamp}`, {
-      cache: 'no-store'
-    })
-    if (res.ok) {
-      notice.value = await res.text()
-    }
-  } catch (e) {
-    console.error('Failed to fetch notice:', e)
-  }
+    const res = await fetch(`https://raw.githubusercontent.com/Camvanaa/koishi-plugin-grouphelper/dev/notice.md?t=${timestamp}`, { cache: 'no-store' })
+    if (res.ok) notice.value = await res.text()
+  } catch (e) { console.error(e) }
 }
 
 const loadVersions = async () => {
   const timestamp = Date.now()
   const fetchOptions = { cache: 'no-store' as RequestCache }
-
   try {
-    // GitHub Main
-    fetch(`https://raw.githubusercontent.com/Camvanaa/koishi-plugin-grouphelper/main/package.json?t=${timestamp}`, fetchOptions)
-      .then(res => res.json())
-      .then(pkg => versions.main = pkg.version)
-      .catch(() => versions.main = '获取失败')
-
-    // GitHub Dev
-    fetch(`https://raw.githubusercontent.com/Camvanaa/koishi-plugin-grouphelper/dev/package.json?t=${timestamp}`, fetchOptions)
-      .then(res => res.json())
-      .then(pkg => versions.dev = pkg.version)
-      .catch(() => versions.dev = '获取失败')
-
-    // NPM
-    fetch('https://registry.npmjs.org/koishi-plugin-grouphelper/latest', fetchOptions)
-      .then(res => res.json())
-      .then(pkg => versions.npm = pkg.version)
-      .catch(() => versions.npm = '获取失败')
-  } catch (e) {
-    console.error('Failed to load versions', e)
-  }
+    fetch(`https://raw.githubusercontent.com/Camvanaa/koishi-plugin-grouphelper/main/package.json?t=${timestamp}`, fetchOptions).then(res => res.json()).then(pkg => versions.main = pkg.version).catch(() => versions.main = 'Fail')
+    fetch(`https://raw.githubusercontent.com/Camvanaa/koishi-plugin-grouphelper/dev/package.json?t=${timestamp}`, fetchOptions).then(res => res.json()).then(pkg => versions.dev = pkg.version).catch(() => versions.dev = 'Fail')
+    fetch('https://registry.npmjs.org/koishi-plugin-grouphelper/latest', fetchOptions).then(res => res.json()).then(pkg => versions.npm = pkg.version).catch(() => versions.npm = 'Fail')
+  } catch (e) {}
 }
 
 const loadCommits = async () => {
   try {
     commitsError.value = ''
     const res = await fetch('https://api.github.com/repos/Camvanaa/koishi-plugin-grouphelper/commits?sha=dev&per_page=5')
-    if (res.ok) {
-      commits.value = await res.json()
-    } else {
-      commitsError.value = `HTTP ${res.status}`
-    }
-  } catch (e: any) {
-    console.error('Failed to load commits', e)
-    commitsError.value = e.message || '网络错误'
-  }
+    if (res.ok) commits.value = await res.json()
+    else commitsError.value = `HTTP ${res.status}`
+  } catch (e: any) { commitsError.value = e.message }
 }
 
 const loadStats = async () => {
   loading.value = true
-  error.value = ''
   try {
-    const data = await statsApi.dashboard()
-    Object.assign(stats, data)
-  } catch (e: any) {
-    error.value = e.message || '加载统计数据失败'
-  } finally {
-    loading.value = false
-  }
+    Object.assign(stats, await statsApi.dashboard())
+  } catch (e) {} finally { loading.value = false }
 }
 
-const formatTime = (timestamp: number) => {
-  return new Date(timestamp).toLocaleString('zh-CN')
+const loadCharts = async () => {
+  chartLoading.value = true
+  try {
+    const data = await statsApi.charts(7)
+    Object.assign(chartData, data)
+  } catch (e) {} finally { chartLoading.value = false }
 }
 
-const formatRelativeTime = (dateStr: string) => {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  
-  const minutes = Math.floor(diff / 60000)
-  if (minutes < 60) return `${minutes} 分钟前`
-  
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} 小时前`
-  
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days} 天前`
-  
-  return date.toLocaleDateString('zh-CN')
-}
+const formatTime = (ts: number) => new Date(ts).toLocaleString('zh-CN')
 
 onMounted(() => {
-  loadStats()
-  loadNotice()
-  loadVersions()
-  loadCommits()
+  loadStats(); loadNotice(); loadVersions(); loadCommits(); loadCharts()
 })
 </script>
 
 <style scoped>
+/* ========================================
+   GitHub Dimmed / Vercel 风格 Dashboard
+   使用 Koishi 全局 CSS 变量
+   ======================================== */
+
 .dashboard-container {
-  padding: 1.5rem;
+  padding: 1rem;
   max-width: 1600px;
   margin: 0 auto;
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
+  font-family: var(--gh-font-sans, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif);
 }
 
-/* Hero Section - 更加通透现代 */
+/* Hero Section - 极简顶部 */
 .hero-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0.5rem;
+  padding: 0;
 }
 
 .hero-content {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.75rem;
 }
 
 .hero-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--k-color-primary);
-  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+}
+
+.hero-icon :deep(svg) {
+  width: 36px;
+  height: 36px;
 }
 
 .hero-text h1 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--k-color-text);
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--fg1);
 }
 
 .hero-meta {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  color: var(--k-color-text-description);
-  font-size: 0.85rem;
+  gap: 0.5rem;
+  color: var(--fg3);
+  font-size: 0.7rem;
+  margin-top: 2px;
 }
 
+/* 状态指示器 - 实心小圆点，克制配色 */
 .status-indicator {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   color: var(--k-color-success);
-  font-weight: 600;
-  font-size: 0.8rem;
+  font-weight: 500;
+  font-size: 0.65rem;
   background: var(--k-color-success-fade);
-  padding: 2px 10px;
-  border-radius: 12px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(59, 165, 94, 0.2);
 }
 
+/* 克制的实心圆点，无高斯模糊 */
 .dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 8px currentColor;
+  background: var(--k-color-success);
 }
 
+/* 版本标签 - 等宽字体 */
 .version-tag {
-  background: var(--k-bg-light);
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-family: monospace;
-  font-size: 0.8rem;
-  border: 1px solid var(--k-color-border);
+  background: var(--bg3);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
+  font-size: 0.65rem;
+  color: var(--fg3);
+  border: 1px solid var(--k-color-divider);
 }
 
-/* Grid Layout */
+.uptime {
+  color: var(--fg3);
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
+}
+
+/* 按钮 - GitHub 风格 */
+.button {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  user-select: none;
+  background: var(--bg3);
+  color: var(--fg2);
+  border: 1px solid var(--k-color-divider);
+}
+
+.button:hover {
+  background: var(--k-card-bg);
+  border-color: var(--k-color-border);
+  color: var(--fg1);
+}
+
+.button.is-primary {
+  background: var(--k-color-success-fade);
+  color: var(--k-color-success);
+  border-color: rgba(59, 165, 94, 0.25);
+}
+
+.button.is-primary:hover {
+  background: rgba(59, 165, 94, 0.2);
+  border-color: rgba(59, 165, 94, 0.4);
+}
+
+/* Grid Layout - 紧凑间距 */
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(160px, auto);
-  gap: 1.25rem;
+  grid-auto-rows: auto;
+  gap: 12px;
+  padding-bottom: 1rem;
 }
 
-.card {
-  background: var(--k-card-bg);
-  border-radius: 20px;
-  padding: 1.5rem;
-  border: 1px solid var(--k-color-border);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+.grid-item {
   position: relative;
-  overflow: hidden;
-  animation: fadeInUp 0.4s ease-out backwards;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+  animation: card-enter 0.25s ease-out backwards;
 }
 
-.card:nth-child(1) { animation-delay: 0.05s; }
-.card:nth-child(2) { animation-delay: 0.1s; }
-.card:nth-child(3) { animation-delay: 0.15s; }
-.card:nth-child(4) { animation-delay: 0.2s; }
-.card:nth-child(5) { animation-delay: 0.25s; }
-.card:nth-child(6) { animation-delay: 0.3s; }
-.card:nth-child(7) { animation-delay: 0.35s; }
-
-@keyframes fadeInUp {
+@keyframes card-enter {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -395,313 +524,220 @@ onMounted(() => {
   }
 }
 
-.card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
-  border-color: var(--k-color-primary-fade);
+.bento-grid.is-editing .grid-item {
+  border: 1px dashed var(--k-color-divider);
+  border-radius: 6px;
+  cursor: move;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  color: var(--k-color-text);
-  font-weight: 600;
+.bento-grid.is-editing .grid-item:hover {
+  border-color: var(--k-color-primary);
 }
 
-.card-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-/* Stat Cards - 更有质感 */
-.stat-card {
-  grid-column: span 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* 底部装饰条 */
-.stat-card::after {
-  content: '';
+/* Edit Overlay */
+.edit-overlay {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: var(--stat-color);
-  opacity: 0.8;
-  transition: opacity 0.3s;
-}
-
-.stat-card:hover::after {
-  opacity: 1;
-}
-
-.stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  bottom: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  margin-bottom: 1.25rem;
-  background: var(--stat-color-fade);
-  color: var(--stat-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  opacity: 0;
+  transition: opacity 0.12s ease;
 }
 
-.stat-card:hover .stat-icon {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px var(--stat-color-fade);
+.grid-item:hover .edit-overlay {
+  opacity: 1;
 }
 
-.stat-value {
-  font-size: 2.75rem;
-  font-weight: 800;
-  color: var(--stat-color);
-  line-height: 1;
-  margin-bottom: 0.5rem;
-  letter-spacing: -2px;
-}
-
-.stat-label {
-  color: var(--k-color-text-description);
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Stat Colors Configuration */
-.stat-card.blue { --stat-color: #409eff; --stat-color-bg: #409eff; --stat-color-fade: rgba(64, 158, 255, 0.1); }
-.stat-card.orange { --stat-color: #e6a23c; --stat-color-bg: #e6a23c; --stat-color-fade: rgba(230, 162, 60, 0.1); }
-.stat-card.red { --stat-color: #f56c6c; --stat-color-bg: #f56c6c; --stat-color-fade: rgba(245, 108, 108, 0.1); }
-.stat-card.green { --stat-color: #67c23a; --stat-color-bg: #67c23a; --stat-color-fade: rgba(103, 194, 58, 0.1); }
-
-/* Notice Card */
-.notice-card {
-  grid-column: span 4;
-  border-left: 4px solid var(--k-color-primary);
-  border-radius: 20px 20px 20px 16px;
-}
-
-.notice-content {
-  color: var(--k-color-text);
-  line-height: 1.7;
-}
-
-/* Info Cards Layout */
-.version-card, .updates-card {
-  grid-column: span 2;
-  grid-row: span 2;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.card-header {
+.remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  background: var(--k-color-danger);
+  color: #fff;
+  border-radius: 3px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--k-color-border);
-  color: var(--k-color-text);
-  font-weight: 600;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+  font-size: 12px;
 }
 
-/* Version List - 更干净 */
-.version-list {
+.remove-btn:hover {
+  background: var(--k-color-danger-shade);
+}
+
+.drag-handle {
+  color: var(--fg1);
+  font-size: 1.25rem;
+  opacity: 0.8;
+}
+
+/* Add Placeholder */
+.add-widget-placeholder {
+  grid-column: span 1;
+  border: 1px dashed var(--k-color-divider) !important;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg3);
+  cursor: pointer !important;
+  transition: border-color 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+  min-height: 120px;
+  background: transparent;
+  gap: 4px;
 }
 
-.version-row {
+.add-widget-placeholder:hover {
+  border-color: var(--k-color-primary) !important;
+  color: var(--k-color-primary);
+  background: var(--k-color-primary-fade);
+}
+
+.add-widget-placeholder .k-icon {
+  font-size: 1.25rem;
+}
+
+.add-widget-placeholder span {
+  font-size: 0.7rem;
+}
+
+/* Modal - GitHub 风格 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background: var(--k-card-bg);
+  width: 400px;
+  max-width: 90vw;
+  border-radius: 6px;
+  padding: 1rem;
+  border: 1px solid var(--k-color-border);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.875rem 1rem;
-  background: var(--k-bg-light);
-  border-radius: 12px;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
+  margin-bottom: 1rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--k-color-divider);
 }
 
-.version-row:hover {
-  border-color: var(--k-color-border);
-  transform: translateX(4px);
+.modal-header h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--fg1);
 }
 
-.v-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--k-color-text);
-  font-size: 0.9rem;
+.close-btn {
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--fg3);
+  transition: color 0.12s ease, background-color 0.12s ease;
 }
 
-/* Updates List - 时间轴样式 */
-.commits-list {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 0.5rem;
+.close-btn:hover {
+  background: var(--bg3);
+  color: var(--fg1);
+}
+
+.widget-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 6px;
+  max-height: 50vh;
+  overflow-y: auto;
 }
 
-.commit-item {
+.widget-option {
   display: flex;
-  gap: 1rem;
-  padding: 0.875rem 0.75rem;
-  position: relative;
-  text-decoration: none;
-  color: inherit;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  margin-left: 0.5rem;
-}
-
-.commit-item:hover {
-  background: var(--k-bg-light);
-  transform: translateX(4px);
-}
-
-/* Timeline line */
-.commit-item::before {
-  content: '';
-  position: absolute;
-  left: 20px;
-  top: 3rem;
-  bottom: -0.25rem;
-  width: 2px;
-  background: var(--k-color-border);
-  z-index: 0;
-}
-
-.commit-item:last-child::before {
-  display: none;
-}
-
-.commit-avatar {
-  position: relative;
-  z-index: 1;
-}
-
-.commit-avatar img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 3px solid var(--k-card-bg);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-  transition: transform 0.2s;
-}
-
-.commit-item:hover .commit-avatar img {
-  transform: scale(1.1);
-}
-
-.commit-info {
-  flex: 1;
-  min-width: 0;
-  padding-top: 0.25rem;
-}
-
-.commit-msg {
-  font-weight: 600;
-  margin-bottom: 0.35rem;
-  color: var(--k-color-text);
-  font-size: 0.9rem;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
-  overflow: hidden;
-}
-
-.commit-meta {
-  font-size: 0.8rem;
-  color: var(--k-color-text-description);
-  display: flex;
-  gap: 0.75rem;
   align-items: center;
-}
-
-.commit-meta span:first-child {
-  font-weight: 500;
-  color: var(--k-color-primary);
-}
-
-/* Scrollbar styling */
-.commits-list::-webkit-scrollbar {
-  width: 4px;
-}
-.commits-list::-webkit-scrollbar-track {
+  gap: 0.75rem;
+  padding: 0.625rem;
+  border: 1px solid var(--k-color-divider);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
   background: transparent;
 }
-.commits-list::-webkit-scrollbar-thumb {
-  background: var(--k-color-border);
-  border-radius: 2px;
+
+.widget-option:hover {
+  border-color: var(--k-color-primary);
+  background: var(--k-color-primary-fade);
 }
 
-/* Responsive */
+.widget-preview {
+  width: 32px;
+  height: 32px;
+  background: var(--bg3);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--fg2);
+  flex-shrink: 0;
+}
+
+.widget-info h4 {
+  margin: 0 0 2px 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--fg1);
+}
+
+.widget-info p {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--fg3);
+}
+
+/* 响应式布局 */
 @media (max-width: 1200px) {
   .bento-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .notice-card {
-    grid-column: span 2;
-  }
 }
 
 @media (max-width: 768px) {
-  .dashboard-container {
-    padding: 1rem;
+  .bento-grid {
+    grid-template-columns: 1fr;
   }
+
   .hero-section {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.75rem;
   }
-  .bento-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  .card, .stat-card, .version-card, .updates-card, .notice-card {
-    grid-column: span 1;
-  }
-  .commit-item::before {
-    display: none; /* Hide timeline on mobile */
+
+  .hero-actions {
+    align-self: flex-end;
   }
 }
-
-/* Loading States */
-.skeleton {
-  background: linear-gradient(90deg, var(--k-color-bg-2) 25%, var(--k-color-bg-1) 50%, var(--k-color-bg-2) 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: 6px;
-}
-
-@keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.loading-text, .error-text {
-  text-align: center;
-  padding: 2rem;
-  color: var(--k-color-text-description);
-}
-
-.spin {
-  animation: spin 1s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
 </style>

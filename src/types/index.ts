@@ -240,11 +240,15 @@ export interface GroupConfig {
   goodbyeEnabled?: boolean
   levelLimit?: number  // 等级限制
   leaveCooldown?: number  // 退群冷却天数
+  /** 警告次数限制（覆盖全局设置） */
+  warnLimit?: number
   banme?: BanMeConfig
   dice?: DiceConfig
   antiRepeat?: AntiRepeatConfig
   openai?: {
     enabled: boolean
+    chatEnabled?: boolean
+    translateEnabled?: boolean
     systemPrompt?: string
     translatePrompt?: string
   }
@@ -252,6 +256,12 @@ export interface GroupConfig {
     enabled: boolean
     retentionDays?: number
     maxRecordsPerUser?: number
+  }
+  report?: {
+    enabled: boolean
+    autoProcess?: boolean
+    includeContext?: boolean
+    contextSize?: number
   }
 }
 

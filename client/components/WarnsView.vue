@@ -1,40 +1,41 @@
 <template>
   <div class="warns-view">
+    <!-- Header -->
     <div class="view-header">
       <h2 class="view-title">警告记录</h2>
       <div class="header-actions">
         <div class="toggle-wrapper">
-          <label>解析名称</label>
-          <el-switch v-model="fetchNames" @change="refreshWarns" />
+          <span class="toggle-label">解析名称</span>
+          <el-switch v-model="fetchNames" @change="refreshWarns" size="small" />
         </div>
-        <k-button @click="showAddDialog = true">
-          <template #icon><k-icon name="plus" /></template>
-          添加警告
-        </k-button>
-        <k-button @click="reloadWarns" :loading="reloading" title="从文件重新加载警告数据">
-          <template #icon><k-icon name="database" /></template>
-          重载
-        </k-button>
-        <k-button type="primary" @click="refreshWarns">
-          <template #icon><k-icon name="refresh-cw" /></template>
-          刷新
-        </k-button>
+        <div class="btn-group">
+          <button class="btn btn-secondary" @click="reloadWarns" :disabled="reloading" title="从文件重新加载">
+            <k-icon name="loader" class="spin" v-if="reloading" />
+            重载
+          </button>
+          <button class="btn btn-secondary" @click="refreshWarns" title="刷新列表">
+            刷新
+          </button>
+          <button class="btn btn-primary" @click="showAddDialog = true">
+            添加警告
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 加载状态 -->
+    <!-- Loading -->
     <div v-if="loading" class="loading-state">
       <k-icon name="loader" class="spin" />
-      <span>加载中...</span>
+      <span class="loading-text">加载中...</span>
     </div>
 
-    <!-- 主布局：左右分栏 -->
+    <!-- Main Layout -->
     <div v-else-if="Object.keys(groupedWarns).length > 0" class="warns-layout">
-      
-      <!-- 左侧：群组列表 -->
+      <!-- Sidebar -->
       <div class="sidebar">
         <div class="sidebar-header">
-          <span>群组列表 ({{ Object.keys(groupedWarns).length }})</span>
+          <span class="sidebar-title">群组</span>
+          <span class="sidebar-count">{{ Object.keys(groupedWarns).length }}</span>
         </div>
         <div class="sidebar-list">
           <div
@@ -44,7 +45,7 @@
             :class="{ active: selectedGuildId === guildId }"
             @click="selectGuild(guildId as string)"
           >
-            <div class="item-icon">
+            <div class="item-avatar">
               <img
                 v-if="fetchNames && groupWarns[0].guildAvatar"
                 :src="groupWarns[0].guildAvatar"
@@ -53,37 +54,45 @@
               />
               <k-icon v-else name="users" />
             </div>
-            <div class="item-info">
+            <div class="item-content">
               <div class="item-name" :title="getGuildName(groupWarns[0])">
                 {{ getGuildName(groupWarns[0]) }}
               </div>
               <div class="item-meta">
-                {{ groupWarns.length }} 条记录
+                <span class="meta-count">{{ groupWarns.length }}</span> 条记录
               </div>
             </div>
-            <div class="active-indicator"></div>
           </div>
         </div>
       </div>
 
-      <!-- 右侧：详情列表 -->
+      <!-- Content -->
       <div class="content-area">
         <div v-if="selectedGuildId && groupedWarns[selectedGuildId]" class="group-detail">
           <div class="detail-header">
-            <div class="detail-title">
-              <h3>{{ getGuildName(groupedWarns[selectedGuildId][0]) }}</h3>
-              <span class="detail-subtitle">群号: {{ selectedGuildId }}</span>
+            <div class="detail-info">
+              <h3 class="detail-name">{{ getGuildName(groupedWarns[selectedGuildId][0]) }}</h3>
+              <code class="detail-id">{{ selectedGuildId }}</code>
+            </div>
+            <div class="detail-stats">
+              <span class="stat-value">{{ groupedWarns[selectedGuildId].length }}</span>
+              <span class="stat-label">条记录</span>
             </div>
           </div>
-          
+
           <div class="user-list">
+            <div class="list-header">
+              <span class="col-user">用户</span>
+              <span class="col-time">时间</span>
+              <span class="col-action">操作</span>
+            </div>
             <div
               v-for="item in groupedWarns[selectedGuildId]"
               :key="item.key"
               class="user-row"
             >
               <div class="user-info">
-                <div class="avatar-placeholder">
+                <div class="user-avatar-wrap">
                   <img
                     v-if="fetchNames && item.userAvatar"
                     :src="item.userAvatar"
@@ -92,24 +101,22 @@
                   />
                   <k-icon v-else name="user" />
                 </div>
-                <div class="user-details">
-                  <div class="user-name">{{ item.userName !== 'Unknown' ? item.userName : '未知用户' }}</div>
-                  <div class="user-id">{{ item.userId }}</div>
-                </div>
-              </div>
-              
-              <div class="warn-stats">
-                <div class="warn-time">
-                  <k-icon name="clock" class="small-icon" />
-                  {{ formatTime(item.timestamp) }}
+                <div class="user-meta">
+                  <span class="user-name">{{ item.userName !== 'Unknown' ? item.userName : '未知用户' }}</span>
+                  <code class="user-id">{{ item.userId }}</code>
                 </div>
               </div>
 
+              <div class="warn-time">
+                <code>{{ formatTime(item.timestamp) }}</code>
+              </div>
+
               <div class="warn-control">
-                <el-input-number 
-                  v-model="item.count" 
-                  :min="0" 
+                <el-input-number
+                  v-model="item.count"
+                  :min="0"
                   size="small"
+                  controls-position="right"
                   @change="(val) => updateWarn(item, val)"
                 />
                 <k-button size="small" type="danger" @click="updateWarn(item, 0)" title="清除警告">
@@ -121,19 +128,21 @@
           </div>
         </div>
         <div v-else class="empty-selection">
-          <k-icon name="arrow-left" class="arrow-icon" />
-          <p>请选择左侧群组查看详情</p>
+          <k-icon name="chevron-left" />
+          <span>选择群组</span>
         </div>
       </div>
     </div>
 
-    <!-- 空状态 -->
+    <!-- Empty -->
     <div v-else class="empty-state">
-      <k-icon name="check-circle" class="empty-icon" />
-      <p>暂无警告记录</p>
+      <div class="empty-icon-wrap">
+        <k-icon name="check-circle" />
+      </div>
+      <p class="empty-text">暂无警告记录</p>
     </div>
 
-    <!-- 添加警告弹窗 -->
+    <!-- Dialog -->
     <div v-if="showAddDialog" class="dialog-overlay" @click.self="showAddDialog = false">
       <div class="dialog-card">
         <div class="dialog-header">
@@ -144,20 +153,20 @@
         </div>
         <div class="dialog-body">
           <div class="form-group">
-            <label>群号</label>
+            <label class="form-label">群号</label>
             <input
               v-model="newWarn.guildId"
               type="text"
-              placeholder="输入群号..."
+              placeholder="输入群号"
               class="form-input"
             />
           </div>
           <div class="form-group">
-            <label>用户ID</label>
+            <label class="form-label">用户ID</label>
             <input
               v-model="newWarn.userId"
               type="text"
-              placeholder="输入用户ID..."
+              placeholder="输入用户ID"
               class="form-input"
             />
           </div>
@@ -180,7 +189,7 @@ import type { WarnRecord } from '../types'
 const loading = ref(false)
 const adding = ref(false)
 const reloading = ref(false)
-const fetchNames = ref(false)
+const fetchNames = ref(true)
 const showAddDialog = ref(false)
 const selectedGuildId = ref<string>('')
 
@@ -308,175 +317,258 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ============================================
+   GitHub Dimmed Style - Professional & Minimal
+   使用 Koishi 全局 CSS 变量
+   ============================================ */
+
 .warns-view {
+  --radius: 6px;
+  --border: 1px solid var(--k-color-divider);
+
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
+/* Header */
 .view-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--k-color-divider);
   flex-shrink: 0;
+}
+
+.view-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fg1);
+  margin: 0;
+  letter-spacing: -0.25px;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .toggle-wrapper {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--k-color-text);
+  font-size: 0.75rem;
+  color: var(--fg3);
+  margin-right: 0.75rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid var(--k-color-divider);
 }
 
-.view-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--k-color-text);
-  margin: 0;
+.toggle-label {
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
-/* 布局容器 */
+.btn-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Header Buttons Override */
+.btn {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.12s ease;
+  user-select: none;
+  border: var(--border);
+  line-height: 1;
+}
+
+.btn-secondary {
+  background: var(--bg3);
+  color: var(--fg2);
+}
+
+.btn-secondary:hover {
+  background: var(--bg3);
+  border-color: var(--k-color-border);
+  color: var(--fg1);
+}
+
+.btn-primary {
+  background: var(--k-color-primary-fade);
+  color: var(--k-color-primary);
+  border-color: rgba(116, 89, 255, 0.2);
+}
+
+.btn-primary:hover {
+  background: rgba(116, 89, 255, 0.18);
+  border-color: rgba(116, 89, 255, 0.35);
+  color: var(--k-color-primary);
+}
+
+.header-actions :deep(.k-icon) {
+  font-size: 14px;
+}
+
+/* El-Switch Override */
+.toggle-wrapper :deep(.el-switch) {
+  --el-switch-on-color: var(--k-color-primary);
+  --el-switch-off-color: var(--bg3);
+  --el-switch-border-color: var(--k-color-border);
+  height: 18px;
+}
+
+.toggle-wrapper :deep(.el-switch__core) {
+  min-width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  border: 1px solid var(--k-color-border);
+}
+
+.toggle-wrapper :deep(.el-switch__core .el-switch__action) {
+  width: 14px;
+  height: 14px;
+}
+
+/* Main Layout */
 .warns-layout {
   display: flex;
   flex: 1;
-  border: 1px solid var(--k-color-border);
-  border-radius: 20px;
-  background: var(--k-card-bg);
+  border: 1px solid var(--k-color-divider);
+  border-radius: 6px;
+  background: var(--bg2);
   overflow: hidden;
-  height: 0; /* 关键：触发 flex 高度计算 */
-  animation: fadeInUp 0.4s ease-out backwards;
+  height: 0;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 左侧边栏 */
+/* Sidebar */
 .sidebar {
-  width: 280px;
+  width: 260px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--k-color-border);
-  background: var(--k-color-bg-1);
+  border-right: 1px solid var(--k-color-divider);
+  background: var(--bg1);
 }
 
 .sidebar-header {
-  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--k-color-divider);
+}
+
+.sidebar-title {
+  font-size: 12px;
   font-weight: 600;
-  color: var(--k-color-text-description);
-  border-bottom: 1px solid var(--k-color-border);
-  font-size: 0.9rem;
+  color: var(--fg2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sidebar-count {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  color: var(--fg3);
+  background: var(--bg3);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .sidebar-list {
   flex: 1;
   overflow-y: auto;
-  padding: 0.5rem;
+  padding: 4px;
 }
 
 .sidebar-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  position: relative;
-  margin-bottom: 2px;
+  transition: background-color 0.15s ease;
+  margin-bottom: 1px;
+  border: 1px solid transparent;
 }
 
 .sidebar-item:hover {
-  background: var(--k-color-bg-2);
-  transform: translateX(4px);
+  background: var(--bg3);
 }
 
 .sidebar-item.active {
-  background: var(--k-color-active-bg, rgba(64, 158, 255, 0.1));
+  background: var(--k-color-primary-fade);
+  border-color: var(--k-color-primary);
 }
 
-.item-icon {
-  color: var(--k-color-text-description);
+.item-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg3);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  color: var(--fg3);
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
 .guild-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.sidebar-item.active .item-icon {
-  color: var(--k-color-active);
-}
-
-.item-info {
+.item-content {
   flex: 1;
-  min-width: 0; /* 文本截断需要 */
+  min-width: 0;
 }
 
 .item-name {
+  font-size: 13px;
   font-weight: 500;
-  color: var(--k-color-text);
+  color: var(--fg1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.95rem;
 }
 
 .sidebar-item.active .item-name {
-  color: var(--k-color-active);
+  color: var(--k-color-primary-tint);
 }
 
 .item-meta {
-  font-size: 0.8rem;
-  color: var(--k-color-text-description);
-  margin-top: 2px;
+  font-size: 11px;
+  color: var(--fg3);
+  margin-top: 1px;
 }
 
-.active-indicator {
-  width: 3px;
-  height: 0;
-  background: var(--k-color-active);
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  border-radius: 3px 0 0 3px;
-  transition: height 0.2s;
+.meta-count {
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  color: var(--fg2);
 }
 
-.sidebar-item.active .active-indicator {
-  height: 60%;
-}
-
-/* 右侧内容区 */
+/* Content Area */
 .content-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--k-card-bg);
+  background: var(--bg2);
   min-width: 0;
 }
 
@@ -487,60 +579,134 @@ onMounted(() => {
 }
 
 .detail-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--k-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--k-color-divider);
+  background: var(--bg1);
 }
 
-.detail-title h3 {
+.detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-name {
   margin: 0;
-  font-size: 1.25rem;
-  color: var(--k-color-text);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
 }
 
-.detail-subtitle {
-  font-size: 0.9rem;
-  color: var(--k-color-text-description);
-  margin-top: 0.25rem;
-  display: block;
-  font-family: monospace;
+.detail-id {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  color: var(--fg3);
+  background: transparent;
 }
 
+.detail-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+/* User List */
 .user-list {
   flex: 1;
   overflow-y: auto;
-  padding: 0;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: 240px 1fr 180px;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--k-color-divider);
+  background: var(--bg1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .user-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 240px 1fr 180px;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--k-color-divider);
+  transition: background-color 0.15s ease;
   align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--k-color-border);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .user-row:hover {
-  background-color: var(--k-color-bg-1);
-  transform: translateX(6px);
-  box-shadow: -4px 0 0 var(--k-color-active);
+  background: var(--bg3);
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  width: 250px;
+  gap: 10px;
+  overflow: hidden;
 }
 
-.avatar-placeholder {
-  width: 40px;
-  height: 40px;
+.col-action {
+  text-align: right;
+}
+
+.warn-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .list-header,
+  .user-row {
+    grid-template-columns: 1fr 120px 140px;
+  }
+}
+
+@media (max-width: 600px) {
+  .list-header,
+  .user-row {
+    grid-template-columns: 1fr 140px;
+  }
+  .col-time,
+  .warn-time {
+    display: none;
+  }
+}
+
+.user-avatar-wrap {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--k-color-bg-2);
+  background: var(--bg3);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--k-color-text-description);
+  color: var(--fg3);
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -549,51 +715,52 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
-.user-details {
+.user-meta {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  gap: 1px;
 }
 
 .user-name {
-  font-weight: 600;
-  color: var(--k-color-text);
-  font-size: 0.95rem;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-id {
-  font-family: monospace;
-  font-size: 0.8rem;
-  color: var(--k-color-text-description);
-}
-
-.warn-stats {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  color: var(--k-color-text-description);
-  font-size: 0.9rem;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  color: var(--fg3);
+  background: transparent;
 }
 
 .warn-time {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  flex: 1;
 }
 
-.small-icon {
-  font-size: 0.9rem;
+.warn-time code {
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  color: var(--fg2);
+  background: transparent;
 }
 
 .warn-control {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 8px;
+  width: 160px;
+  justify-content: flex-end;
 }
 
-/* 滚动条美化 */
+/* Scrollbar */
 .sidebar-list::-webkit-scrollbar,
 .user-list::-webkit-scrollbar {
   width: 6px;
@@ -606,17 +773,39 @@ onMounted(() => {
 
 .sidebar-list::-webkit-scrollbar-thumb,
 .user-list::-webkit-scrollbar-thumb {
-  background-color: var(--k-color-border);
+  background-color: var(--bg3);
   border-radius: 3px;
 }
 
 .sidebar-list::-webkit-scrollbar-thumb:hover,
 .user-list::-webkit-scrollbar-thumb:hover {
-  background-color: var(--k-color-text-description);
+  background-color: var(--fg3);
 }
 
-/* 状态相关 */
-.loading-state,
+/* States */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+}
+
+.loading-text {
+  font-size: 13px;
+  color: var(--fg3);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+  color: var(--fg3);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .empty-state,
 .empty-selection {
   display: flex;
@@ -624,44 +813,41 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--k-color-text-description);
-  gap: 1rem;
+  gap: 8px;
+  color: var(--fg3);
 }
 
-.empty-icon {
-  font-size: 48px;
-  opacity: 0.5;
-  color: #67c23a;
+.empty-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--k-color-success-fade);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--k-color-success);
 }
 
-.arrow-icon {
-  font-size: 32px;
-  opacity: 0.5;
-  transform: translateX(-10px);
-  animation: bounce-left 2s infinite;
+.empty-text {
+  font-size: 13px;
+  margin: 0;
 }
 
-@keyframes bounce-left {
-  0%, 100% { transform: translateX(-10px); }
-  50% { transform: translateX(-15px); }
+.empty-selection {
+  flex-direction: row;
+  gap: 6px;
+  font-size: 13px;
 }
 
-.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* 弹窗样式 */
+/* Dialog */
 .dialog-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -669,28 +855,29 @@ onMounted(() => {
 }
 
 .dialog-card {
-  background: var(--k-card-bg);
-  border-radius: 20px;
+  background: var(--bg2);
+  border: 1px solid var(--k-color-divider);
+  border-radius: 6px;
   width: 90%;
-  max-width: 400px;
+  max-width: 380px;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  animation: fadeInUp 0.3s ease-out;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
 }
 
 .dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--k-color-border);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--k-color-divider);
+  background: var(--bg1);
 }
 
 .dialog-header h3 {
   margin: 0;
-  font-size: 1.125rem;
-  color: var(--k-color-text);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
 }
 
 .close-btn {
@@ -698,56 +885,154 @@ onMounted(() => {
   border: none;
   cursor: pointer;
   padding: 4px;
-  color: var(--k-color-text-description);
+  color: var(--fg3);
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
+  transition: all 0.15s ease;
 }
 
 .close-btn:hover {
-  color: var(--k-color-text);
+  color: var(--fg1);
+  background: var(--bg3);
 }
 
 .dialog-body {
-  padding: 1.5rem;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
-.form-group label {
+.form-label {
+  font-size: 12px;
   font-weight: 500;
-  color: var(--k-color-text);
+  color: var(--fg2);
 }
 
 .form-input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--k-color-border);
-  border-radius: 8px;
-  background: var(--k-color-bg-1);
-  color: var(--k-color-text);
+  padding: 8px 10px;
+  border: 1px solid var(--k-color-divider);
+  border-radius: 6px;
+  background: var(--bg1);
+  color: var(--fg1);
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 13px;
   box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.form-input::placeholder {
+  color: var(--fg3);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--k-color-active);
+  border-color: var(--k-color-primary);
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--k-color-border);
+  padding: 12px 16px;
+  border-top: 1px solid var(--k-color-divider);
+  background: var(--bg1);
+}
+
+/* Dialog Footer Buttons Override */
+.dialog-footer :deep(.k-button) {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--k-color-divider);
+  background: var(--bg3);
+  color: var(--fg2);
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.dialog-footer :deep(.k-button:hover) {
+  background: var(--k-card-bg);
+  border-color: var(--k-color-border);
+  color: var(--fg1);
+}
+
+.dialog-footer :deep(.k-button[type="primary"]) {
+  background: var(--k-color-primary-fade);
+  border-color: var(--k-color-primary-tint);
+  color: var(--k-color-primary);
+}
+
+.dialog-footer :deep(.k-button[type="primary"]:hover) {
+  background: rgba(116, 89, 255, 0.25);
+  border-color: rgba(116, 89, 255, 0.5);
+}
+
+/* El-InputNumber Override */
+.warn-control :deep(.el-input-number) {
+  width: 90px;
+}
+
+.warn-control :deep(.el-input__wrapper) {
+  background: var(--bg1);
+  border: 1px solid var(--k-color-divider);
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.warn-control :deep(.el-input__wrapper:hover) {
+  border-color: var(--k-color-border);
+}
+
+.warn-control :deep(.el-input__wrapper.is-focus) {
+  border-color: var(--k-color-primary) !important;
+}
+
+.warn-control :deep(.el-input__inner) {
+  color: var(--fg1);
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-size: 12px;
+}
+
+.warn-control :deep(.el-input-number__decrease),
+.warn-control :deep(.el-input-number__increase) {
+  background: var(--bg2);
+  border-color: var(--k-color-divider);
+  color: var(--fg2);
+}
+
+.warn-control :deep(.el-input-number__decrease:hover),
+.warn-control :deep(.el-input-number__increase:hover) {
+  color: var(--k-color-primary);
+}
+
+/* Row Delete Button */
+.warn-control :deep(.k-button) {
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--k-color-danger);
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.warn-control :deep(.k-button:hover) {
+  background: var(--k-color-danger-fade);
+  border-color: var(--k-color-danger);
+}
+
+.warn-control :deep(.k-icon) {
+  font-size: 12px;
 }
 </style>

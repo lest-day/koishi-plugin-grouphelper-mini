@@ -64,42 +64,49 @@ const activeComponent = computed(() => {
 })
 
 const menuItems = [
-  { id: 'dashboard', label: '仪表盘', icon: 'grouphelper:dashboard' },
-  { id: 'config', label: '群组配置', icon: 'grouphelper:config' },
-  { id: 'warns', label: '警告记录', icon: 'grouphelper:warn' },
-  { id: 'blacklist', label: '黑名单', icon: 'grouphelper:blacklist' },
-  { id: 'roles', label: '角色权限', icon: 'grouphelper:roles' },
-  { id: 'logs', label: '日志检索', icon: 'grouphelper:log' },
-  { id: 'chat', label: '实时聊天', icon: 'grouphelper:chat' },
-  { id: 'subscriptions', label: '订阅管理', icon: 'grouphelper:subscription' },
-  { id: 'settings', label: '设置', icon: 'grouphelper:settings' },
+  { id: 'dashboard', label: '仪表盘', icon: 'grouphelper:octicons.apps' },
+  { id: 'config', label: '群组配置', icon: 'grouphelper:octicons.tools' },
+  { id: 'warns', label: '警告记录', icon: 'grouphelper:octicons.warning' },
+  { id: 'blacklist', label: '黑名单', icon: 'grouphelper:octicons.personadd' },
+  { id: 'roles', label: '角色权限', icon: 'grouphelper:octicons.people' },
+  { id: 'logs', label: '日志检索', icon: 'grouphelper:octicons.log' },
+  { id: 'chat', label: '实时聊天', icon: 'grouphelper:octicons.discussion' },
+  { id: 'subscriptions', label: '订阅管理', icon: 'grouphelper:octicons.sub' },
+  { id: 'settings', label: '设置', icon: 'grouphelper:octicons.gear' },
 ]
 </script>
 
 <style scoped>
+/* ========================================
+   GitHub Dimmed / Vercel 风格主布局
+   使用 Koishi 全局 CSS 变量
+   ======================================== */
+
 .grouphelper-app {
-  background: var(--k-color-bg-1);
+  background: var(--bg1);
   height: 100vh;
   min-height: 0;
+  font-family: var(--gh-font-sans, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif);
 }
 
+/* 顶部导航 - 紧凑专业 */
 .top-nav {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--k-color-bg-2);
-  border-bottom: 1px solid var(--k-color-border);
-  height: 50px;
+  background: var(--k-card-bg);
+  border-bottom: 1px solid var(--k-color-divider);
+  height: 48px;
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px;
-  height: 50px;
+  padding: 0 16px;
+  height: 48px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .logo-area {
@@ -109,74 +116,86 @@ const menuItems = [
 }
 
 .logo-text {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  color: var(--k-color-text);
+  letter-spacing: 0.3px;
+  color: var(--fg1);
+  text-transform: uppercase;
 }
 
+/* 版本号 - 等宽字体 */
 .version-text {
-  font-size: 11px;
-  color: var(--k-color-text-description);
-  opacity: 0.7;
+  font-size: 10px;
+  font-family: var(--gh-font-mono, 'JetBrains Mono', 'SF Mono', Consolas, monospace);
+  color: var(--fg3);
+  background: var(--bg3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--k-color-divider);
 }
 
 .nav-tabs {
   display: flex;
-  gap: 8px;
+  gap: 2px;
   margin-left: auto;
 }
 
 .nav-tab {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 6px 10px;
   cursor: pointer;
-  color: var(--k-color-text-description);
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s ease, border-color 0.15s ease;
-  margin-bottom: -1px;
+  color: var(--fg3);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: color 0.12s ease, background-color 0.12s ease;
+  border: 1px solid transparent;
 }
 
 .nav-tab:hover {
-  color: var(--k-color-text);
+  color: var(--fg2);
+  background: var(--bg3);
 }
 
 .nav-tab.active {
-  color: var(--k-color-active);
-  border-bottom-color: var(--k-color-active);
-  font-weight: 600;
+  color: var(--fg1);
+  background: var(--bg3);
+  border-color: var(--k-color-divider);
 }
 
 .tab-icon {
   font-size: 14px;
   width: 14px;
   height: 14px;
+  opacity: 0.8;
 }
 
 .main-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
-  height: calc(100vh - 50px - 40px); /* 减去顶部导航和padding */
-  overflow: hidden; /* 默认不滚动，让子组件自己管理滚动 */
+  padding: 16px;
+  height: calc(100vh - 48px);
+  overflow: hidden;
   box-sizing: border-box;
 }
 
-/* 某些视图需要外层滚动 */
 .main-content:has(.needs-scroll) {
   overflow: auto;
 }
-
-/* 默认隐藏外层滚动条，由子组件自行管理 */
 </style>
 
 <style>
-/* 全局滚动条样式美化 */
+/* 隐藏 Koishi 控制台自带的 layout-header */
+.grouphelper-app .layout-header {
+  display: none !important;
+}
+
+/* 全局滚动条样式 - GitHub 风格 */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -184,13 +203,65 @@ const menuItems = [
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(150, 150, 150, 0.3);
-  border-radius: 4px;
-  border: 2px solid transparent;
-  background-clip: content-box;
+  background-color: var(--k-color-border);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(150, 150, 150, 0.5);
+  background-color: var(--fg3);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ========================================
+   全局动画规范 - 克制平衡
+   ======================================== */
+
+/* 统一的过渡时间变量 */
+:root {
+  --gh-transition-fast: 0.12s ease;
+  --gh-transition-normal: 0.15s ease;
+  --gh-transition-slow: 0.2s ease;
+}
+
+/* 减少运动偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 统一的入场动画 - 简洁版本 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInSubtle {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 统一的加载动画 */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 统一的骨架屏动画 */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
 }
 </style>

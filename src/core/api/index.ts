@@ -480,6 +480,114 @@ export function registerWebSocketAPI(ctx: Context, service: GroupHelperService) 
     })
   })
 
+  /** 获取图表统计数据 */
+  ctx.console.addListener('grouphelper/stats/charts' as any, async (params?: { days?: number }) => {
+    const days = params?.days || 7
+    const now = Date.now()
+    const startTime = now - days * 24 * 60 * 60 * 1000
+
+    // 获取日志模块
+    const logModule = service.getAllModules().find(m => m.meta.name === 'log') as any
+    if (!logModule) return error('Log module not found')
+
+    const logs = await logModule.getAllLogs()
+
+    // 1. 按日期统计命令使用趋势
+    const dailyStats: Record<string, number> = {}
+    // 2. 命令类型分布
+    const commandStats: Record<string, number> = {}
+    // 3. 成功/失败统计
+    let successCount = 0
+    let failCount = 0
+    // 4. 群组使用统计
+    const guildStats: Record<string, number> = {}
+    // 5. 用户使用统计
+    const userStats: Record<string, { count: number, name: string }> = {}
+
+    // 初始化日期
+    for (let i = 0; i < days; i++) {
+      const date = new Date(now - i * 24 * 60 * 60 * 1000)
+      const dateKey = date.toISOString().slice(0, 10)
+      dailyStats[dateKey] = 0
+    }
+
+    // 统计日志
+    logs.forEach((log: any) => {
+      try {
+        const logTime = new Date(log.timestamp).getTime()
+        if (logTime < startTime) return
+
+        // 日期统计
+        const dateKey = new Date(log.timestamp).toISOString().slice(0, 10)
+        if (dailyStats[dateKey] !== undefined) {
+          dailyStats[dateKey]++
+        }
+
+        // 命令分布
+        const cmd = log.command || 'unknown'
+        commandStats[cmd] = (commandStats[cmd] || 0) + 1
+
+        // 成功/失败
+        if (log.success) {
+          successCount++
+        } else {
+          failCount++
+        }
+
+        // 群组统计
+        if (log.guildId) {
+          guildStats[log.guildId] = (guildStats[log.guildId] || 0) + 1
+        }
+
+        // 用户统计
+        if (log.userId) {
+          if (!userStats[log.userId]) {
+            userStats[log.userId] = { count: 0, name: log.username || log.userId }
+          }
+          userStats[log.userId].count++
+        }
+      } catch (e) {
+        // 跳过错误日志
+      }
+    })
+
+    // 转换为数组格式，按日期排序
+    const trend = Object.entries(dailyStats)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, count]) => ({ date, count }))
+
+    // 命令分布，按数量排序取前10
+    const distribution = Object.entries(commandStats)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10)
+      .map(([command, count]) => ({ command, count }))
+
+    // 群组排行，取前10（附带群名）
+    const cacheData = service.cache.getCachedData()
+    const guildRank = Object.entries(guildStats)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10)
+      .map(([guildId, count]) => ({
+        guildId,
+        count,
+        name: cacheData.guilds[guildId]?.name || ''
+      }))
+
+    // 用户排行，取前10
+    const userRank = Object.entries(userStats)
+      .sort(([, a], [, b]) => b.count - a.count)
+      .slice(0, 10)
+      .map(([userId, data]) => ({ userId, count: data.count, name: data.name }))
+
+    return success({
+      trend,
+      distribution,
+      successRate: { success: successCount, fail: failCount },
+      guildRank,
+      userRank
+    })
+  })
+
   // ===== 日志检索 API =====
 
   ctx.console.addListener('grouphelper/logs/search', async (params: {
@@ -649,9 +757,11 @@ export function registerWebSocketAPI(ctx: Context, service: GroupHelperService) 
   ctx.console.addListener('grouphelper/chat/guild-members' as any, async (params: { guildId: string }) => {
     try {
       const { guildId } = params
+      ctx.logger('grouphelper').debug('getGuildMembers called:', guildId)
       if (!guildId) return error('缺少 guildId 参数')
 
       for (const bot of ctx.bots) {
+        ctx.logger('grouphelper').debug('Trying bot:', bot.platform, bot.selfId)
         try {
           // 使用 getGuildMemberList 获取成员列表
           const members: any[] = []
@@ -975,6 +1085,8 @@ export function registerWebSocketAPI(ctx: Context, service: GroupHelperService) 
 
   // 监听并广播消息
   const broadcastMessage = async (session: any, isSelf = false) => {
+    ctx.logger('grouphelper').debug('broadcastMessage called:', { isSelf, channelId: session.channelId, userId: session.userId })
+
     // 获取消息内容
     let content = session.content
     let elements = session.elements
@@ -1146,6 +1258,7 @@ export function registerWebSocketAPI(ctx: Context, service: GroupHelperService) 
   ctx.on('message', (session) => {
     broadcastMessage(session)
   })
+  ctx.logger('grouphelper').info('Chat message listener registered')
 
   // 监听发送消息
   // @ts-ignore - send 事件类型定义可能不完整

@@ -30,6 +30,8 @@ export interface GroupConfig {
   goodbyeEnabled?: boolean
   levelLimit?: number
   leaveCooldown?: number
+  /** 警告次数限制（覆盖全局设置） */
+  warnLimit?: number
   dice?: {
     enabled: boolean
     lengthLimit: number
@@ -55,6 +57,8 @@ export interface GroupConfig {
   }
   openai?: {
     enabled: boolean
+    chatEnabled?: boolean
+    translateEnabled?: boolean
     systemPrompt?: string
     translatePrompt?: string
   }
@@ -62,6 +66,12 @@ export interface GroupConfig {
     enabled: boolean
     retentionDays?: number
     maxRecordsPerUser?: number
+  }
+  report?: {
+    enabled: boolean
+    autoProcess?: boolean
+    includeContext?: boolean
+    contextSize?: number
   }
 }
 

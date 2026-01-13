@@ -3,14 +3,14 @@
     <div class="view-header">
       <h2 class="view-title">黑名单</h2>
       <div class="header-actions">
-        <k-button @click="showAddDialog = true">
-          <template #icon><k-icon name="user-plus" /></template>
-          添加用户
-        </k-button>
-        <k-button type="primary" @click="refreshBlacklist">
-          <template #icon><k-icon name="refresh-cw" /></template>
+        <button class="btn btn-secondary" @click="refreshBlacklist" title="刷新列表" :disabled="loading">
+          <k-icon name="refresh-cw" :class="{ 'spin': loading }" />
           刷新
-        </k-button>
+        </button>
+        <button class="btn btn-primary" @click="showAddDialog = true">
+          <k-icon name="user-plus" />
+          添加用户
+        </button>
       </div>
     </div>
 
@@ -160,39 +160,93 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ========== 使用 Koishi 全局 CSS 变量 ========== */
 .blacklist-view {
+  --radius: 6px;
+  --border: 1px solid var(--k-color-divider);
+
   height: 100%;
   display: flex;
   flex-direction: column;
+  font-family: var(--font-family);
 }
 
+/* Header */
 .view-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--k-color-divider);
 }
 
 .view-title {
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: var(--k-color-text);
+  color: var(--fg1);
   margin: 0;
+  letter-spacing: -0.25px;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
+/* Header Buttons Override */
+.btn {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.12s ease;
+  user-select: none;
+  border: var(--border);
+  line-height: 1;
+}
+
+.btn-secondary {
+  background: var(--bg3);
+  color: var(--fg2);
+}
+
+.btn-secondary:hover {
+  background: var(--bg3);
+  border-color: var(--k-color-border);
+  color: var(--fg1);
+}
+
+.btn-primary {
+  background: var(--k-color-primary-fade);
+  color: var(--k-color-primary);
+  border-color: rgba(116, 89, 255, 0.2);
+}
+
+.btn-primary:hover {
+  background: rgba(116, 89, 255, 0.18);
+  border-color: rgba(116, 89, 255, 0.35);
+  color: var(--k-color-primary);
+}
+
+.header-actions :deep(.k-icon) {
+  font-size: 14px;
+}
+
+/* States */
 .loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 3rem;
-  color: var(--k-color-text-description);
+  padding: 2.5rem;
+  color: var(--fg3);
+  font-size: 0.875rem;
 }
 
 .spin {
@@ -213,55 +267,48 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem;
-  color: var(--k-color-text-description);
+  padding: 2.5rem;
+  color: var(--fg3);
+  font-size: 0.875rem;
 }
 
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 1rem;
-  opacity: 0.5;
-  color: #67c23a;
+  font-size: 40px;
+  margin-bottom: 0.75rem;
+  opacity: 0.4;
+  color: var(--k-color-success);
 }
 
+/* Table */
 .blacklist-table {
   background: var(--k-card-bg);
   border: 1px solid var(--k-color-border);
-  border-radius: 20px;
+  border-radius: 6px;
   overflow: hidden;
-  animation: fadeInUp 0.4s ease-out backwards;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .table-header {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 200px 120px;
   gap: 1rem;
-  padding: 1rem;
-  background: var(--k-color-bg-2);
+  padding: 0.75rem 1rem;
+  background: var(--bg1);
   border-bottom: 1px solid var(--k-color-border);
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--k-color-text);
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .table-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 200px 120px;
   gap: 1rem;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   align-items: center;
-  border-bottom: 1px solid var(--k-color-border);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-bottom: 1px solid var(--k-color-divider);
+  transition: background-color 0.15s ease;
 }
 
 .table-row:last-child {
@@ -269,33 +316,76 @@ onMounted(() => {
 }
 
 .table-row:hover {
-  background: var(--k-color-bg-1);
-  transform: translateX(6px);
-  box-shadow: -4px 0 0 #f56c6c;
+  background: var(--bg3);
 }
 
 .col-user {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: var(--font-family-code);
+  font-size: 0.8125rem;
+  color: var(--fg1);
 }
 
 .user-icon {
-  color: #f56c6c;
+  color: var(--k-color-danger);
+  font-size: 16px;
 }
 
 .col-time {
-  color: var(--k-color-text-description);
-  font-size: 0.875rem;
+  color: var(--fg3);
+  font-size: 0.75rem;
+  font-family: var(--font-family-code);
 }
 
+.col-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Row Buttons Override */
+.col-actions :deep(.k-button) {
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--k-color-danger);
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.col-actions :deep(.k-button:hover) {
+  background: var(--k-color-danger-fade);
+  border-color: var(--k-color-danger);
+}
+
+.col-actions :deep(.k-icon) {
+  font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 1fr 80px;
+  }
+  .col-time {
+    display: none;
+  }
+  .col-actions :deep(.k-button) span {
+    display: none; /* 小屏幕隐藏按钮文字 */
+  }
+}
+
+/* Dialog */
 .dialog-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -304,25 +394,27 @@ onMounted(() => {
 
 .add-dialog {
   background: var(--k-card-bg);
-  border-radius: 20px;
+  border: 1px solid var(--k-color-border);
+  border-radius: 4px;
   width: 90%;
-  max-width: 400px;
+  max-width: 380px;
   overflow: hidden;
-  animation: fadeInUp 0.3s ease-out;
 }
 
 .dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--k-color-border);
+  background: var(--bg1);
 }
 
 .dialog-header h3 {
   margin: 0;
-  font-size: 1.125rem;
-  color: var(--k-color-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--fg1);
 }
 
 .close-btn {
@@ -330,74 +422,95 @@ onMounted(() => {
   border: none;
   cursor: pointer;
   padding: 4px;
-  color: var(--k-color-text-description);
+  color: var(--fg3);
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
+  transition: all 0.15s ease;
 }
 
 .close-btn:hover {
-  color: var(--k-color-text);
+  color: var(--fg1);
+  background: var(--bg3);
 }
 
 .add-form {
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .form-group label {
+  font-size: 0.75rem;
   font-weight: 500;
-  color: var(--k-color-text);
+  color: var(--fg2);
 }
 
 .form-input {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid var(--k-color-border);
-  border-radius: 8px;
-  background: var(--k-color-bg-1);
-  color: var(--k-color-text);
-  font-family: inherit;
-  font-size: 0.875rem;
+  border-radius: 4px;
+  background: var(--bg1);
+  color: var(--fg1);
+  font-family: var(--font-family-code);
+  font-size: 0.8125rem;
   box-sizing: border-box;
+  transition: border-color 0.15s ease;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--k-color-active);
+  border-color: var(--k-color-primary);
 }
 
-.form-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--k-color-border);
-  border-radius: 8px;
-  background: var(--k-color-bg-1);
-  color: var(--k-color-text);
-  font-family: inherit;
-  font-size: 0.875rem;
-  resize: vertical;
-  box-sizing: border-box;
-}
-
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--k-color-active);
+.form-input::placeholder {
+  color: var(--fg3);
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  padding: 1rem 1.5rem;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
   border-top: 1px solid var(--k-color-border);
+  background: var(--bg1);
+}
+
+/* Dialog Footer Buttons Override */
+.dialog-footer :deep(.k-button) {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid var(--k-color-divider);
+  background: var(--bg3);
+  color: var(--fg2);
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.dialog-footer :deep(.k-button:hover) {
+  background: var(--k-card-bg);
+  border-color: var(--k-color-border);
+  color: var(--fg1);
+}
+
+.dialog-footer :deep(.k-button[type="primary"]) {
+  background: var(--k-color-primary-fade);
+  border-color: var(--k-color-primary-tint);
+  color: var(--k-color-primary);
+}
+
+.dialog-footer :deep(.k-button[type="primary"]:hover) {
+  background: rgba(116, 89, 255, 0.25);
+  border-color: rgba(116, 89, 255, 0.5);
 }
 </style>
