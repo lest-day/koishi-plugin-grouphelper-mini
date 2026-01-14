@@ -2380,4 +2380,347 @@ const copyRoleId = async () => {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ========================================
+   移动端适配 (< 768px)
+   ======================================== */
+@media (max-width: 768px) {
+  .roles-view-container {
+    flex-direction: column;
+    height: auto;
+    max-height: none;
+    min-height: calc(100vh - 80px);
+  }
+
+  /* 侧边栏变为顶部横向滚动列表 */
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    padding: 0.75rem;
+  }
+
+  .sidebar-header h2 {
+    font-size: 0.75rem;
+  }
+
+  .role-list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.25rem 0.5rem;
+    gap: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .role-list::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .role-item {
+    flex-shrink: 0;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  .role-item.active {
+    border-left: none;
+    margin-left: 0;
+    border-bottom: 2px solid var(--k-color-primary, #7459ff);
+  }
+
+  .drag-handle {
+    display: none;
+  }
+
+  /* 主内容区 */
+  .main-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .content-header {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .content-header h1 {
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .header-actions .clone-btn,
+  .header-actions .danger-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .header-actions span {
+    display: none;
+  }
+
+  /* Tab 导航 */
+  .tabs {
+    padding: 0 0.75rem;
+  }
+
+  .tab-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .tab-content {
+    padding: 1rem;
+    padding-bottom: 100px;
+  }
+
+  /* 表单组件 */
+  .form-group {
+    max-width: 100%;
+  }
+
+  .form-input {
+    font-size: 16px; /* 防止 iOS 缩放 */
+  }
+
+  .form-textarea {
+    font-size: 16px;
+  }
+
+  /* 颜色选择器 */
+  .color-picker-wrapper {
+    width: 100%;
+  }
+
+  .color-text {
+    flex: 1;
+  }
+
+  /* 权限布局 */
+  .permissions-layout {
+    flex-direction: column;
+  }
+
+  .permissions-nav {
+    display: none;
+  }
+
+  .permissions-main {
+    padding-right: 0;
+  }
+
+  .search-bar {
+    flex-direction: column;
+  }
+
+  .search-bar .form-input {
+    width: 100%;
+  }
+
+  .search-bar .secondary-btn {
+    width: 100%;
+  }
+
+  /* 当前已选权限 */
+  .current-perms {
+    padding: 0.5rem;
+  }
+
+  .perm-tag {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+
+  /* 权限项 */
+  .permission-item {
+    padding: 0.625rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .perm-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .perm-info .perm-name {
+    font-size: 0.8rem;
+  }
+
+  .perm-desc {
+    font-size: 0.7rem;
+  }
+
+  .perm-id {
+    font-size: 0.65rem;
+  }
+
+  /* 成员管理 */
+  .add-member {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .add-member .form-input {
+    width: 100%;
+  }
+
+  .add-member .primary-btn,
+  .add-member .secondary-btn {
+    width: 100%;
+  }
+
+  .member-search {
+    max-width: 100%;
+  }
+
+  .member-list {
+    grid-template-columns: 1fr;
+  }
+
+  .member-item {
+    padding: 0.5rem;
+  }
+
+  /* 保存浮动条 */
+  .save-bar {
+    bottom: 12px;
+    width: calc(100% - 24px);
+    max-width: none;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .save-actions {
+    gap: 6px;
+  }
+
+  .reset-btn {
+    font-size: 0.75rem;
+  }
+
+  .save-btn {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* 模态框 */
+  .modal-dialog {
+    min-width: auto;
+    max-width: calc(100vw - 32px);
+    margin: 16px;
+  }
+
+  .import-dialog {
+    min-width: auto;
+    max-width: calc(100vw - 32px);
+  }
+
+  .modal-header {
+    padding: 0.75rem;
+  }
+
+  .modal-header h3 {
+    font-size: 0.85rem;
+  }
+
+  .modal-body {
+    padding: 0.75rem;
+  }
+
+  .modal-footer {
+    padding: 0.625rem 0.75rem;
+  }
+
+  /* 导入对话框 */
+  .guild-input-row {
+    flex-direction: column;
+  }
+
+  .preview-list {
+    max-height: 150px;
+  }
+
+  .preview-item {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .preview-avatar,
+  .preview-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .preview-name {
+    font-size: 0.75rem;
+  }
+
+  .preview-id {
+    font-size: 0.65rem;
+  }
+}
+
+/* 小屏手机适配 (< 480px) */
+@media (max-width: 480px) {
+  .role-item {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .role-color {
+    width: 6px;
+    height: 6px;
+    margin-right: 6px;
+  }
+
+  .role-name {
+    font-size: 0.75rem;
+  }
+
+  .content-header h1 {
+    font-size: 0.9rem;
+  }
+
+  .tab-content {
+    padding: 0.75rem;
+    padding-bottom: 90px;
+  }
+
+  .builtin-notice {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .form-group label {
+    font-size: 0.7rem;
+  }
+
+  .toggle-switch {
+    width: 32px;
+    height: 18px;
+  }
+
+  .toggle-switch .slider:before {
+    height: 12px;
+    width: 12px;
+  }
+
+  .toggle-switch.active .slider:before {
+    transform: translateX(14px);
+  }
+}
 </style>

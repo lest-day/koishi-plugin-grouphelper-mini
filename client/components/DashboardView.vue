@@ -726,18 +726,261 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .dashboard-container {
+    padding: 0;
+  }
+
   .bento-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* 强制所有卡片单列显示 */
+  .grid-item {
+    grid-column: span 1 !important;
   }
 
   .hero-section {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .hero-content {
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .hero-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .hero-icon :deep(svg) {
+    width: 32px;
+    height: 32px;
+  }
+
+  .hero-text h1 {
+    font-size: 1rem;
+  }
+
+  .hero-meta {
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    font-size: 0.7rem;
   }
 
   .hero-actions {
-    align-self: flex-end;
+    align-self: stretch;
+    width: 100%;
+  }
+
+  .hero-actions .button {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px;
+    font-size: 0.8rem;
+  }
+
+  /* 卡片样式优化 */
+  .bento-card {
+    border-radius: 8px;
+  }
+
+  .card-header {
+    padding: 0.75rem;
+  }
+
+  .card-title {
+    font-size: 0.8rem;
+  }
+
+  .card-body {
+    padding: 0.75rem;
+    padding-top: 0;
+  }
+
+  /* 统计卡片 */
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+  }
+
+  /* 编辑模式优化 */
+  .edit-overlay {
+    opacity: 0.9;
+  }
+
+  .drag-handle {
+    font-size: 1.25rem;
+    padding: 8px;
+  }
+
+  .remove-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .add-widget-placeholder {
+    min-height: 100px;
+    font-size: 0.85rem;
+  }
+
+  /* 模态框适配 */
+  .modal-overlay {
+    padding: 16px;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: none;
+    max-height: 85vh;
+    padding: 0;
+    border-radius: 12px;
+  }
+
+  .modal-header {
+    margin-bottom: 0;
+    padding: 1rem;
+    border-bottom: 1px solid var(--k-color-divider);
+  }
+
+  .modal-header h3 {
+    font-size: 1rem;
+  }
+
+  .modal-close {
+    width: 32px;
+    height: 32px;
+  }
+
+  .widget-list {
+    max-height: 60vh;
+    padding: 0.75rem;
+  }
+
+  .widget-option {
+    padding: 0.75rem;
+    gap: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .widget-preview {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .widget-info h4 {
+    font-size: 0.85rem;
+  }
+
+  .widget-info p {
+    font-size: 0.75rem;
+  }
+
+  /* 图表卡片优化 */
+  .chart-container {
+    min-height: 180px;
+  }
+
+  /* 模块状态列表优化 */
+  .module-item {
+    padding: 0.625rem;
+  }
+
+  .module-name {
+    font-size: 0.8rem;
+  }
+
+  .module-status {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+}
+
+/* 小屏手机适配 (< 480px) */
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 0;
+  }
+
+  .bento-grid {
+    gap: 8px;
+  }
+
+  .hero-section {
+    padding: 0.625rem;
+    gap: 0.5rem;
+  }
+
+  .hero-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .hero-icon :deep(svg) {
+    width: 28px;
+    height: 28px;
+  }
+
+  .hero-text h1 {
+    font-size: 0.9rem;
+  }
+
+  .hero-meta {
+    font-size: 0.65rem;
+  }
+
+  .version-tag {
+    font-size: 0.6rem;
+    padding: 1px 4px;
+  }
+
+  .status-indicator {
+    font-size: 0.6rem;
+    padding: 1px 5px;
+  }
+
+  .button {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+
+  .card-header {
+    padding: 0.625rem;
+  }
+
+  .card-body {
+    padding: 0.625rem;
+    padding-top: 0;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  .chart-container {
+    min-height: 150px;
+  }
+
+  .widget-option {
+    padding: 0.625rem;
+  }
+
+  .widget-preview {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
   }
 }
 </style>
