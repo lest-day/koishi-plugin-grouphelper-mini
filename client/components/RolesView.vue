@@ -221,16 +221,33 @@
                  </template>
                </span>
              </div>
-             
+
              <!-- 自定义角色：可以添加成员 -->
              <template v-else>
                <div class="add-member">
                    <input type="text" v-model="newMemberId" placeholder="输入用户 ID 添加..." class="form-input" @keyup.enter="addMember">
                    <button class="primary-btn" @click.stop="handleAddMember">添加成员</button>
+                   <button class="secondary-btn" @click.stop="showImportDialog = true">导入成员</button>
                </div>
-               
-               <div class="member-list" v-if="currentRoleMembers.length > 0">
-                   <div v-for="member in currentRoleMembers" :key="member.id" class="member-item">
+
+               <!-- 成员搜索框 -->
+               <div class="member-search" v-if="currentRoleMembers.length > 5">
+                 <input
+                   type="text"
+                   v-model="memberSearchQuery"
+                   placeholder="搜索成员..."
+                   class="form-input"
+                 >
+                 <span class="member-count" v-if="memberSearchQuery">
+                   {{ filteredRoleMembers.length }} / {{ currentRoleMembers.length }}
+                 </span>
+                 <span class="member-count" v-else>
+                   共 {{ currentRoleMembers.length }} 人
+                 </span>
+               </div>
+
+               <div class="member-list" v-if="filteredRoleMembers.length > 0">
+                   <div v-for="member in filteredRoleMembers" :key="member.id" class="member-item">
                        <div class="member-info">
                           <img v-if="member.avatar" :src="member.avatar" class="member-avatar">
                           <div v-else class="member-icon">👤</div>
@@ -242,6 +259,7 @@
                        <button class="danger-btn" @click.stop="handleRemoveMember(member.id)">移除</button>
                    </div>
                </div>
+               <div v-else-if="memberSearchQuery && currentRoleMembers.length > 0" class="empty-tip">未找到匹配的成员</div>
                <div v-else class="empty-tip">暂无成员（输入用户 QQ 号添加）</div>
              </template>
         </div>
@@ -277,6 +295,130 @@
         </div>
       </div>
     </transition>
+
+    <!-- 导入成员对话框 -->
+    <transition name="fade">
+      <div class="modal-overlay" v-if="showImportDialog" @click="closeImportDialog">
+        <div class="modal-dialog import-dialog" @click.stop>
+          <div class="modal-header">
+            <h3>导入成员</h3>
+          </div>
+          <div class="modal-body">
+            <!-- 导入来源选择 -->
+            <div class="form-group">
+              <label>导入来源</label>
+              <div class="import-source-options">
+                <label class="radio-label">
+                  <input type="radio" v-model="importSource" value="role">
+                  从其他角色导入
+                </label>
+                <label class="radio-label">
+                  <input type="radio" v-model="importSource" value="authority">
+                  从 Authority 等级导入
+                </label>
+                <label class="radio-label">
+                  <input type="radio" v-model="importSource" value="guild-admin">
+                  从群管理员导入
+                </label>
+              </div>
+            </div>
+
+            <!-- 角色选择 -->
+            <div class="form-group" v-if="importSource === 'role'">
+              <label>选择角色</label>
+              <select v-model="importSourceRoleId" class="form-input" @change="loadImportPreview">
+                <option value="">请选择角色...</option>
+                <option
+                  v-for="role in otherRoles"
+                  :key="role.id"
+                  :value="role.id"
+                >{{ role.name }}</option>
+              </select>
+            </div>
+
+            <!-- Authority 等级选择 -->
+            <div class="form-group" v-if="importSource === 'authority'">
+              <label>选择权限等级</label>
+              <select v-model="importAuthorityLevel" class="form-input" @change="loadAuthorityUsers">
+                <option :value="1">Authority 1</option>
+                <option :value="2">Authority 2</option>
+                <option :value="3">Authority 3</option>
+                <option :value="4">Authority 4</option>
+                <option :value="5">Authority 5</option>
+              </select>
+              <div class="field-hint">将从 Koishi 数据库中获取对应权限等级的用户</div>
+            </div>
+
+            <!-- 群号输入 -->
+            <div class="form-group" v-if="importSource === 'guild-admin'">
+              <label>输入群号</label>
+              <div class="guild-input-row">
+                <input
+                  type="text"
+                  v-model="importGuildId"
+                  placeholder="请输入群号..."
+                  class="form-input"
+                  @keyup.enter="loadGuildAdmins"
+                >
+                <button class="primary-btn" @click="loadGuildAdmins" :disabled="importLoading">
+                  {{ importLoading ? '加载中...' : '获取' }}
+                </button>
+              </div>
+              <div class="field-hint">将获取该群的管理员和群主</div>
+            </div>
+
+            <!-- 预览列表 -->
+            <div class="import-preview" v-if="importPreviewMembers.length > 0">
+              <div class="preview-header">
+                <label class="checkbox-label select-all">
+                  <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll">
+                  <span>全选</span>
+                </label>
+                <span class="preview-count">已选 {{ selectedImportIds.size }} / {{ importPreviewMembers.length }}</span>
+              </div>
+              <div class="preview-list">
+                <div
+                  v-for="member in importPreviewMembers"
+                  :key="member.id"
+                  class="preview-item"
+                  :class="{ selected: selectedImportIds.has(member.id) }"
+                  @click="toggleMemberSelect(member.id)"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="selectedImportIds.has(member.id)"
+                    @click.stop
+                    @change="toggleMemberSelect(member.id)"
+                  >
+                  <img v-if="member.avatar" :src="member.avatar" class="preview-avatar">
+                  <div v-else class="preview-icon">👤</div>
+                  <span class="preview-name">{{ member.name || member.id }}</span>
+                  <span class="preview-id">{{ member.id }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 空状态 -->
+            <div class="import-empty" v-else-if="!importLoading && (importSourceRoleId || importGuildId || importSource === 'authority')">
+              <span>暂无可导入的成员</span>
+            </div>
+
+            <!-- 加载中 -->
+            <div class="import-loading" v-if="importLoading">
+              <span>加载中...</span>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="secondary-btn" @click="closeImportDialog">取消</button>
+            <button
+              class="primary-btn"
+              @click="doImportMembers"
+              :disabled="selectedImportIds.size === 0 || importLoading"
+            >导入 ({{ selectedImportIds.size }})</button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -307,6 +449,55 @@ const permSearch = ref('')
 const newMemberId = ref('')
 const currentRoleMembers = ref<RoleMember[]>([])
 const loading = ref(false)
+const memberSearchQuery = ref('')
+
+// 过滤后的角色成员列表
+const filteredRoleMembers = computed(() => {
+  if (!memberSearchQuery.value.trim()) {
+    return currentRoleMembers.value
+  }
+  const query = memberSearchQuery.value.toLowerCase().trim()
+  return currentRoleMembers.value.filter(m =>
+    m.id.toLowerCase().includes(query) ||
+    (m.name && m.name.toLowerCase().includes(query))
+  )
+})
+
+// 导入对话框相关状态
+const showImportDialog = ref(false)
+const importSource = ref<'role' | 'authority' | 'guild-admin'>('role')
+const importSourceRoleId = ref('')
+const importAuthorityLevel = ref(1)
+const importGuildId = ref('')
+const importPreviewMembers = ref<RoleMember[]>([])
+const importLoading = ref(false)
+const selectedImportIds = ref<Set<string>>(new Set())
+
+// 全选状态
+const isAllSelected = computed(() => {
+  if (importPreviewMembers.value.length === 0) return false
+  return importPreviewMembers.value.every(m => selectedImportIds.value.has(m.id))
+})
+
+// 切换单个成员选择
+const toggleMemberSelect = (id: string) => {
+  const newSet = new Set(selectedImportIds.value)
+  if (newSet.has(id)) {
+    newSet.delete(id)
+  } else {
+    newSet.add(id)
+  }
+  selectedImportIds.value = newSet
+}
+
+// 全选/取消全选
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedImportIds.value = new Set()
+  } else {
+    selectedImportIds.value = new Set(importPreviewMembers.value.map(m => m.id))
+  }
+}
 
 // 快速导航相关
 const permissionsMainRef = ref<HTMLElement | null>(null)
@@ -527,6 +718,7 @@ const selectRole = async (role: Role) => {
   scopeMode.value = (normalizedRole.guildIds && normalizedRole.guildIds.length > 0) ? 'guilds' : 'global'
   console.log('[RolesView] Selected role:', normalizedRole, 'scopeMode:', scopeMode.value)
   activeTab.value = 'display'
+  memberSearchQuery.value = '' // 重置成员搜索
   fetchRoleMembers(role.id)
 }
 
@@ -827,6 +1019,124 @@ const removeMember = async (userId: string) => {
 const handleRemoveMember = (userId: string) => {
   console.log('[RolesView] handleRemoveMember triggered for:', userId)
   removeMember(userId)
+}
+
+// 导入相关的计算属性和方法
+const otherRoles = computed(() => {
+  if (!currentRole.value) return roles.value
+  return roles.value.filter(r => r.id !== currentRole.value!.id && !r.builtin)
+})
+
+// 监听导入来源变化，切换时清空并自动加载
+watch(importSource, (newSource) => {
+  // 切换来源时清空预览列表
+  importPreviewMembers.value = []
+  selectedImportIds.value = new Set()
+  importSourceRoleId.value = ''
+  importGuildId.value = ''
+
+  // 如果切换到 authority，自动加载当前选中等级的用户
+  if (newSource === 'authority') {
+    loadAuthorityUsers()
+  }
+})
+
+const closeImportDialog = () => {
+  showImportDialog.value = false
+  importSource.value = 'role'
+  importSourceRoleId.value = ''
+  importAuthorityLevel.value = 1
+  importGuildId.value = ''
+  importPreviewMembers.value = []
+  importLoading.value = false
+  selectedImportIds.value = new Set()
+}
+
+const loadImportPreview = async () => {
+  if (!importSourceRoleId.value) {
+    importPreviewMembers.value = []
+    selectedImportIds.value = new Set()
+    return
+  }
+
+  importLoading.value = true
+  try {
+    const members = await authApi.getRoleMembers(importSourceRoleId.value, true)
+    // 过滤掉已经是当前角色成员的用户
+    const existingIds = new Set(currentRoleMembers.value.map(m => m.id))
+    importPreviewMembers.value = members.filter(m => !existingIds.has(m.id))
+    // 默认全选
+    selectedImportIds.value = new Set(importPreviewMembers.value.map(m => m.id))
+  } catch (e) {
+    console.error('[RolesView] Failed to load role members:', e)
+    message.error('加载成员列表失败')
+    importPreviewMembers.value = []
+    selectedImportIds.value = new Set()
+  } finally {
+    importLoading.value = false
+  }
+}
+
+const loadAuthorityUsers = async () => {
+  importLoading.value = true
+  try {
+    const members = await authApi.getUsersByAuthority(importAuthorityLevel.value)
+    // 过滤掉已经是当前角色成员的用户
+    const existingIds = new Set(currentRoleMembers.value.map(m => m.id))
+    importPreviewMembers.value = members.filter(m => !existingIds.has(m.id))
+    // 默认全选
+    selectedImportIds.value = new Set(importPreviewMembers.value.map(m => m.id))
+  } catch (e) {
+    console.error('[RolesView] Failed to load authority users:', e)
+    message.error('加载用户列表失败')
+    importPreviewMembers.value = []
+    selectedImportIds.value = new Set()
+  } finally {
+    importLoading.value = false
+  }
+}
+
+const loadGuildAdmins = async () => {
+  if (!importGuildId.value.trim()) {
+    message.warning('请输入群号')
+    return
+  }
+
+  importLoading.value = true
+  try {
+    const members = await authApi.getGuildAdmins(importGuildId.value.trim())
+    // 过滤掉已经是当前角色成员的用户
+    const existingIds = new Set(currentRoleMembers.value.map(m => m.id))
+    importPreviewMembers.value = members.filter(m => !existingIds.has(m.id))
+    // 默认全选
+    selectedImportIds.value = new Set(importPreviewMembers.value.map(m => m.id))
+  } catch (e) {
+    console.error('[RolesView] Failed to load guild admins:', e)
+    message.error('获取群管理员失败')
+    importPreviewMembers.value = []
+    selectedImportIds.value = new Set()
+  } finally {
+    importLoading.value = false
+  }
+}
+
+const doImportMembers = async () => {
+  if (!currentRole.value || selectedImportIds.value.size === 0) return
+
+  importLoading.value = true
+  try {
+    const userIds = Array.from(selectedImportIds.value)
+    const result = await authApi.importMembers(currentRole.value.id, userIds)
+    message.success(`成功导入 ${result.imported} 个成员`)
+    closeImportDialog()
+    // 刷新成员列表
+    await fetchRoleMembers(currentRole.value.id)
+  } catch (e) {
+    console.error('[RolesView] Failed to import members:', e)
+    message.error('导入失败: ' + (e instanceof Error ? e.message : String(e)))
+  } finally {
+    importLoading.value = false
+  }
 }
 
 // 拖拽排序
@@ -1574,6 +1884,24 @@ const copyRoleId = async () => {
   max-width: 400px;
 }
 
+.member-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  max-width: 400px;
+}
+
+.member-search .form-input {
+  flex: 1;
+}
+
+.member-count {
+  font-size: 0.75rem;
+  color: var(--fg3, rgba(255, 255, 245, .4));
+  white-space: nowrap;
+}
+
 .member-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -1889,5 +2217,167 @@ const copyRoleId = async () => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* 导入成员对话框 */
+.import-dialog {
+  min-width: 400px;
+  max-width: 520px;
+}
+
+.import-source-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.guild-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.guild-input-row .form-input {
+  flex: 1;
+}
+
+.import-preview {
+  margin-top: 1rem;
+  border: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.preview-header {
+  padding: 0.5rem 0.75rem;
+  background: var(--bg1, #1e1e20);
+  border-bottom: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  font-size: 0.75rem;
+  color: var(--fg2, rgba(255, 255, 245, .6));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin: 0;
+  accent-color: var(--k-color-primary, #7459ff);
+  cursor: pointer;
+}
+
+.select-all {
+  font-weight: 500;
+}
+
+.preview-count {
+  color: var(--fg3, rgba(255, 255, 245, .4));
+  font-size: 0.7rem;
+}
+
+.preview-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.preview-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.preview-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.preview-list::-webkit-scrollbar-thumb {
+  background: var(--k-color-divider, rgba(82, 82, 89, 0.5));
+  border-radius: 2px;
+}
+
+.preview-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--k-color-divider, rgba(82, 82, 89, 0.3));
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.preview-item:hover {
+  background: var(--bg3, #313136);
+}
+
+.preview-item.selected {
+  background: rgba(116, 89, 255, 0.1);
+}
+
+.preview-item.selected:hover {
+  background: rgba(116, 89, 255, 0.15);
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+.preview-item input[type="checkbox"] {
+  margin: 0;
+  accent-color: var(--k-color-primary, #7459ff);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.preview-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.preview-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg3, #313136);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg3, rgba(255, 255, 245, .4));
+  font-size: 10px;
+}
+
+.preview-name {
+  flex: 1;
+  font-size: 0.8rem;
+  color: var(--fg1, rgba(255, 255, 245, .9));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-id {
+  font-size: 0.7rem;
+  color: var(--fg3, rgba(255, 255, 245, .4));
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+
+.import-empty,
+.import-loading {
+  padding: 2rem;
+  text-align: center;
+  color: var(--fg3, rgba(255, 255, 245, .4));
+  font-size: 0.8rem;
+}
+
+.primary-btn:disabled,
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
