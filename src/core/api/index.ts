@@ -189,6 +189,145 @@ export function registerWebSocketAPI(ctx: Context, service: GroupHelperService) 
     return success({ success: true })
   })
 
+  /** 批量导入成员到角色 */
+  ctx.console.addListener('grouphelper/auth/role/import-members' as any, async (params: { roleId: string, userIds: string[] }) => {
+    try {
+      const { roleId, userIds } = params
+      if (!roleId || !userIds || !Array.isArray(userIds)) {
+        return error('无效的参数')
+      }
+
+      // 内置角色不可手动分配
+      if (service.auth.isBuiltinRole(roleId)) {
+        return error('内置角色由系统自动分配，不支持手动添加成员')
+      }
+
+      let imported = 0
+      for (const userId of userIds) {
+        if (userId && typeof userId === 'string') {
+          try {
+            await service.auth.assignRole(userId.trim(), roleId)
+            imported++
+          } catch {}
+        }
+      }
+
+      await service.data.authUsers.flush()
+      return success({ success: true, imported })
+    } catch (e) {
+      return error(e instanceof Error ? e.message : '导入失败')
+    }
+  })
+
+  /** 获取指定 authority 等级的用户列表 */
+  ctx.console.addListener('grouphelper/auth/users-by-authority' as any, async (params: { authority: number }) => {
+    try {
+      const { authority } = params
+      if (typeof authority !== 'number' || authority < 1 || authority > 5) {
+        return error('无效的权限等级')
+      }
+
+      // 从 Koishi 数据库查询指定权限等级的用户
+      const users = await ctx.database.get('user', { authority })
+
+      if (users.length === 0) {
+        return success([])
+      }
+
+      // 获取用户的 aid 列表
+      const aids = users.map(u => u.id)
+
+      // 从 binding 表查询实际的平台用户 ID
+      const bindings = await ctx.database.get('binding', { aid: { $in: aids } })
+
+      // 按 aid 分组 bindings，优先取 onebot/red/qq 平台的绑定
+      const aidToBinding: Record<number, { platform: string; pid: string }> = {}
+      for (const binding of bindings) {
+        const existing = aidToBinding[binding.aid]
+        // 优先使用 QQ 相关平台
+        const isQQPlatform = ['onebot', 'red', 'qq'].includes(binding.platform)
+        if (!existing || (isQQPlatform && !['onebot', 'red', 'qq'].includes(existing.platform))) {
+          aidToBinding[binding.aid] = { platform: binding.platform, pid: binding.pid }
+        }
+      }
+
+      const cacheData = service.cache.getCachedData()
+      const members = users
+        .filter(user => aidToBinding[user.id]) // 只保留有绑定的用户
+        .map(user => {
+          const binding = aidToBinding[user.id]
+          const userId = binding.pid
+          const cached = cacheData.users[userId]
+          const isQQPlatform = ['onebot', 'red', 'qq'].includes(binding.platform)
+          return {
+            id: userId,
+            name: cached?.name || user.name || '',
+            avatar: cached?.avatar || (isQQPlatform ? `https://q1.qlogo.cn/g?b=qq&nk=${userId}&s=640` : '')
+          }
+        })
+
+      return success(members)
+    } catch (e) {
+      ctx.logger('grouphelper').error('获取权限用户列表失败:', e)
+      return error(e instanceof Error ? e.message : '获取用户列表失败')
+    }
+  })
+
+  /** 获取指定群的管理员列表 */
+  ctx.console.addListener('grouphelper/auth/guild-admins' as any, async (params: { guildId: string }) => {
+    try {
+      const { guildId } = params
+      if (!guildId) {
+        return error('缺少群号')
+      }
+
+      // 获取群成员列表
+      for (const bot of ctx.bots) {
+        try {
+          const members: any[] = []
+          let next: string | undefined
+
+          do {
+            const result = await bot.getGuildMemberList(guildId, next)
+            if (result.data) {
+              members.push(...result.data)
+            }
+            next = result.next
+          } while (next)
+
+          // 筛选管理员和群主
+          const admins = members.filter(member => {
+            const roles = member.roles || []
+            const role = (member as any).role
+            return roles.includes('admin') || roles.includes('owner') || role === 'admin' || role === 'owner'
+          })
+
+          // 格式化返回
+          const result = admins.map(member => {
+            const userId = member.user?.id || member.userId
+            let avatar = member.user?.avatar || member.avatar
+            if (!avatar && (bot.platform === 'onebot' || bot.platform === 'red' || bot.platform === 'qq')) {
+              avatar = `https://q1.qlogo.cn/g?b=qq&nk=${userId}&s=640`
+            }
+            return {
+              id: userId,
+              name: member.nick || member.user?.nick || member.user?.name || userId,
+              avatar
+            }
+          })
+
+          return success(result)
+        } catch (e) {
+          ctx.logger('grouphelper').warn('获取群管理员列表失败:', e)
+        }
+      }
+
+      return error('无法获取群管理员列表')
+    } catch (e) {
+      return error(e instanceof Error ? e.message : '获取群管理员列表失败')
+    }
+  })
+
   /** 获取系统所有可用的权限节点列表 (供前端选择) */
   ctx.console.addListener('grouphelper/auth/permission/list' as any, async () => {
     // 从 AuthService 获取动态注册的权限节点

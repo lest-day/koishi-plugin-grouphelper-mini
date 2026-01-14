@@ -513,4 +513,144 @@ onMounted(() => {
   background: rgba(116, 89, 255, 0.25);
   border-color: rgba(116, 89, 255, 0.5);
 }
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 768px) {
+  .blacklist-view {
+    padding: 12px;
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .view-title {
+    font-size: 1.25rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .header-actions .btn {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .blacklist-container {
+    padding: 0;
+  }
+
+  /* Table to card layout */
+  .table-header {
+    display: none;
+  }
+
+  .blacklist-table {
+    gap: 8px;
+  }
+
+  .table-row {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+    gap: 10px;
+    border-radius: 8px;
+    background: var(--bg2);
+    border: 1px solid var(--k-color-divider);
+  }
+
+  .col-user {
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .col-time {
+    width: 100%;
+    font-size: 12px;
+    color: var(--fg3);
+    padding-left: 24px; /* Align with text after icon */
+  }
+
+  .col-actions {
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid var(--k-color-divider);
+    justify-content: flex-end;
+  }
+
+  /* Dialog */
+  .add-dialog {
+    width: 95%;
+    max-width: none;
+    margin: 16px;
+  }
+
+  .dialog-header {
+    padding: 12px 16px;
+  }
+
+  .dialog-header h3 {
+    font-size: 1rem;
+  }
+
+  .add-form {
+    padding: 16px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+  }
+
+  .form-input {
+    font-size: 16px; /* Prevent iOS zoom */
+    padding: 10px 12px;
+  }
+
+  .dialog-footer {
+    padding: 12px 16px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 40px 20px;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .blacklist-view {
+    padding: 8px;
+  }
+
+  .header-actions {
+    flex-direction: column;
+  }
+
+  .table-row {
+    padding: 10px;
+  }
+
+  .user-icon {
+    font-size: 14px;
+  }
+
+  .col-user span {
+    font-size: 12px;
+  }
+
+  .col-time {
+    font-size: 11px;
+    padding-left: 22px;
+  }
+}
 </style>

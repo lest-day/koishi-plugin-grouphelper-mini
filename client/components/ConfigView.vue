@@ -60,9 +60,8 @@
         <p>{{ searchQuery ? '未找到匹配的群组' : '暂无群组配置' }}</p>
       </div>
 
-      <!-- 列表视图 -->
-      <template v-if="viewMode === 'list'">
-        <div class="list-table">
+      <!-- 列表视图 (使用 v-show 让 CSS 可以控制) -->
+      <div v-show="viewMode === 'list'" class="list-table">
           <div class="list-header">
             <span class="col-guild">群组信息</span>
             <span class="col-features">功能开关</span>
@@ -119,11 +118,9 @@
             </div>
           </div>
         </div>
-      </template>
 
-      <!-- 卡片视图 -->
-      <template v-else>
-        <div class="card-grid">
+      <!-- 卡片视图 (使用 v-show 让 CSS 可以控制) -->
+      <div v-show="viewMode === 'grid'" class="card-grid">
           <div
             v-for="(config, guildId) in filteredConfigs"
             :key="guildId"
@@ -183,7 +180,6 @@
             </div>
           </div>
         </div>
-      </template>
     </div>
 
     <!-- 新建配置弹窗 -->
@@ -2003,5 +1999,553 @@ onMounted(() => {
 .code-highlight:hover {
   border-color: var(--k-color-primary);
   color: var(--k-color-primary);
+}
+
+/* ========================================
+   移动端适配 (< 768px)
+   ======================================== */
+@media (max-width: 768px) {
+  .config-view {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--k-color-divider);
+    flex-shrink: 0;
+  }
+
+  .header-left {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .view-title {
+    font-size: 1rem;
+  }
+
+  .search-wrapper {
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+    font-size: 16px; /* 防止 iOS 缩放 */
+    padding: 0.625rem 0.625rem 0.625rem 2.25rem;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .toggle-wrapper {
+    grid-column: 1 / -1;
+    order: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0;
+    background: var(--bg2);
+    border-radius: 6px;
+  }
+
+  .toggle-wrapper label {
+    font-size: 0.75rem;
+  }
+
+  /* 移动端隐藏视图切换（因为列表视图已被隐藏） */
+  .view-toggle {
+    display: none;
+  }
+
+  .divider-vertical {
+    display: none;
+  }
+
+  .btn {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    justify-content: center;
+  }
+
+  .btn span {
+    display: none;
+  }
+
+  .btn :deep(.k-icon) {
+    margin: 0;
+  }
+
+  /* 群组列表区域 */
+  .config-list {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 强制移动端使用卡片视图 */
+  .list-table {
+    display: none !important;
+  }
+
+  .card-grid {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 0.625rem;
+    padding: 0.75rem;
+  }
+
+  .config-card {
+    padding: 0.875rem;
+    border-radius: 10px;
+  }
+
+  .card-header {
+    margin-bottom: 0.625rem;
+  }
+
+  .guild-info {
+    gap: 0.625rem;
+  }
+
+  .guild-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+
+  .guild-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  .guild-id {
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .card-body {
+    gap: 0.625rem;
+  }
+
+  .feature-badges {
+    gap: 0.375rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    border-radius: 4px;
+  }
+
+  .card-stats {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+    background: var(--bg2);
+    border-radius: 6px;
+    margin-top: 0.25rem;
+  }
+
+  .stat-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .stat-num {
+    color: var(--k-color-primary);
+  }
+
+  .card-footer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--k-color-divider);
+  }
+
+  .card-footer .k-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* 弹窗适配 */
+  .dialog-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .dialog-card {
+    max-width: 100%;
+    max-height: 85vh;
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .dialog-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .dialog-header h3 {
+    font-size: 1rem;
+  }
+
+  .dialog-body {
+    padding: 1rem;
+    max-height: 55vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dialog-footer {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .dialog-footer .btn {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  /* 表单 */
+  .form-group {
+    gap: 0.5rem;
+  }
+
+  .form-group label {
+    font-size: 0.8rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    font-size: 16px;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .form-col {
+    flex: none;
+    width: 100%;
+  }
+
+  /* 空状态 */
+  .empty-state {
+    padding: 3rem 1.5rem;
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+  }
+
+  .empty-state p {
+    font-size: 0.875rem;
+  }
+
+  /* 编辑面板标签页 */
+  .edit-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .edit-tabs .tab-item {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* 小屏手机适配 (< 480px) */
+@media (max-width: 480px) {
+  .view-header {
+    padding: 0.5rem;
+  }
+
+  .view-title {
+    font-size: 0.9rem;
+  }
+
+  .header-actions {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.375rem;
+  }
+
+  .btn {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .card-grid {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .config-card {
+    padding: 0.625rem;
+    border-radius: 8px;
+  }
+
+  .guild-avatar,
+  .guild-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .guild-id {
+    font-size: 0.8rem;
+  }
+
+  .badge {
+    padding: 0.2rem 0.375rem;
+    font-size: 0.65rem;
+  }
+
+  .card-stats {
+    font-size: 0.7rem;
+    padding: 0.375rem;
+  }
+
+  .card-footer {
+    gap: 0.375rem;
+  }
+
+  .card-footer .k-button {
+    padding: 0.3rem 0.375rem;
+    font-size: 0.7rem;
+  }
+
+  .edit-tabs .tab-item {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.7rem;
+  }
+}
+
+/* ========================================
+   编辑弹窗移动端适配
+   ======================================== */
+@media (max-width: 768px) {
+  .edit-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .edit-dialog.large {
+    width: 100%;
+    max-width: 100%;
+    height: 90vh;
+    max-height: 90vh;
+    border-radius: 16px 16px 0 0;
+    animation: slideUp 0.25s ease-out;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .edit-layout {
+    flex-direction: column;
+  }
+
+  /* 侧边栏改为顶部水平标签 */
+  .edit-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--k-color-border);
+    padding: 0.5rem;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .edit-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-item {
+    flex-shrink: 0;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border-radius: 6px;
+    border-left: none !important;
+    margin-left: 0 !important;
+    padding-left: 0.75rem !important;
+  }
+
+  .sidebar-item.active {
+    border-left: none !important;
+    border-bottom: 2px solid var(--k-color-primary);
+    border-radius: 6px 6px 0 0;
+  }
+
+  .sidebar-item .k-icon {
+    display: none;
+  }
+
+  .edit-sidebar .divider {
+    display: none;
+  }
+
+  .edit-content {
+    padding: 0.75rem;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  /* 表单组调整 */
+  .config-section .form-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.375rem;
+  }
+
+  .config-section .form-group label:first-child {
+    width: 100%;
+    font-size: 0.75rem;
+  }
+
+  .config-section .form-textarea {
+    font-size: 16px;
+  }
+
+  .config-section .section-title {
+    font-size: 0.7rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-hint-row {
+    padding-left: 0;
+    margin-top: 0.25rem;
+  }
+
+  /* 插件卡片 */
+  .plugin-card {
+    margin-top: 0.75rem;
+  }
+
+  .plugin-header {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .plugin-title {
+    font-size: 0.8rem;
+  }
+
+  .plugin-body {
+    padding: 0.625rem;
+  }
+
+  .plugin-body .form-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.375rem;
+  }
+
+  .plugin-body .form-group label:first-child {
+    width: 100%;
+    font-size: 0.75rem;
+  }
+
+  .divider-text {
+    font-size: 0.65rem;
+    margin-top: 0.625rem;
+  }
+
+  /* Element Plus 输入框移动端适配 */
+  .config-section :deep(.el-input__inner),
+  .plugin-body :deep(.el-input__inner) {
+    font-size: 16px;
+  }
+
+  .config-section :deep(.el-input-number) {
+    width: 100% !important;
+  }
+
+  .plugin-body :deep(.el-input-number) {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-dialog.large {
+    height: 95vh;
+    max-height: 95vh;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .dialog-header {
+    padding: 0.625rem;
+  }
+
+  .dialog-header h3 {
+    font-size: 0.85rem;
+  }
+
+  .edit-sidebar {
+    padding: 0.375rem;
+  }
+
+  .sidebar-item {
+    padding: 0.4rem 0.625rem;
+    font-size: 0.7rem;
+  }
+
+  .edit-content {
+    padding: 0.5rem;
+  }
+
+  .plugin-title span {
+    font-size: 0.75rem;
+  }
+
+  .toggle-switch {
+    width: 32px;
+    height: 18px;
+  }
+
+  .toggle-switch .slider:before {
+    height: 12px;
+    width: 12px;
+  }
+
+  .toggle-switch input:checked + .slider:before {
+    transform: translateX(14px);
+  }
+
+  .dialog-footer {
+    padding: 0.5rem;
+  }
+
+  .dialog-footer :deep(.k-button) {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
 }
 </style>

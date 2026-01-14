@@ -19,7 +19,29 @@
 
     <!-- Settings Content -->
     <div v-else class="settings-content">
-      <!-- Sidebar -->
+      <!-- Mobile Section Selector -->
+      <div class="mobile-section-selector">
+        <div class="selector-current" @click="sectionDropdownOpen = !sectionDropdownOpen">
+          <span class="current-label">{{ currentSectionLabel }}</span>
+          <k-icon :name="sectionDropdownOpen ? 'chevron-up' : 'chevron-down'" class="selector-arrow" />
+        </div>
+        <transition name="dropdown">
+          <div class="selector-dropdown" v-if="sectionDropdownOpen">
+            <div
+              v-for="section in sections"
+              :key="section.id"
+              class="selector-option"
+              :class="{ active: activeSection === section.id }"
+              @click="selectSection(section.id)"
+            >
+              {{ section.label }}
+            </div>
+          </div>
+        </transition>
+      </div>
+      <div class="mobile-section-backdrop" v-if="sectionDropdownOpen" @click="sectionDropdownOpen = false"></div>
+
+      <!-- Sidebar (PC) -->
       <nav class="settings-sidebar">
         <div
           v-for="section in sections"
@@ -783,6 +805,19 @@ const saving = ref(false)
 const settings = ref<any>({ ...defaultSettings })
 const originalSettings = ref<string>('') // 原始设置的 JSON 字符串用于比较
 const activeSection = ref('warn')
+const sectionDropdownOpen = ref(false)
+
+// 当前选中的 section 标签
+const currentSectionLabel = computed(() => {
+  const section = sections.find(s => s.id === activeSection.value)
+  return section ? section.label : '警告设置'
+})
+
+// 选择 section（移动端下拉使用）
+const selectSection = (id: string) => {
+  activeSection.value = id
+  sectionDropdownOpen.value = false
+}
 
 // 确认对话框状态
 const confirmDialog = ref({
@@ -1607,5 +1642,373 @@ onMounted(() => {
 /* Mono Text */
 .mono {
   font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+/* Mobile Section Selector - 默认隐藏 */
+.mobile-section-selector {
+  display: none;
+}
+
+.mobile-section-backdrop {
+  display: none;
+}
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 768px) {
+  .settings-view {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--k-color-divider);
+    flex-shrink: 0;
+  }
+
+  .view-title {
+    font-size: 1.1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.625rem 1rem;
+  }
+
+  /* 设置内容布局 */
+  .settings-content {
+    flex-direction: column;
+    gap: 0;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+    z-index: 1; /* 确保不会超过顶部导航的 z-index: 10 */
+    isolation: isolate; /* 创建新的堆叠上下文 */
+  }
+
+  /* 隐藏 PC 端侧边栏 */
+  .settings-sidebar {
+    display: none;
+  }
+
+  /* 移动端下拉选择器 */
+  .mobile-section-selector {
+    display: block;
+    position: relative;
+    z-index: 20;
+    flex-shrink: 0;
+    background: var(--bg1);
+    border-bottom: 1px solid var(--k-color-divider);
+  }
+
+  .selector-current {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    background: var(--bg2);
+    transition: background 0.15s ease;
+  }
+
+  .selector-current:hover {
+    background: var(--bg3);
+  }
+
+  .current-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--fg1);
+  }
+
+  .selector-arrow {
+    font-size: 14px;
+    color: var(--fg3);
+    transition: transform 0.2s ease;
+  }
+
+  .selector-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg1);
+    border: 1px solid var(--k-color-border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 60vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 21;
+  }
+
+  .selector-option {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: var(--fg2);
+    cursor: pointer;
+    border-bottom: 1px solid var(--k-color-divider);
+    transition: all 0.15s ease;
+  }
+
+  .selector-option:last-child {
+    border-bottom: none;
+  }
+
+  .selector-option:hover {
+    background: var(--bg3);
+    color: var(--fg1);
+  }
+
+  .selector-option.active {
+    background: var(--k-color-primary-fade);
+    color: var(--k-color-primary);
+    font-weight: 500;
+  }
+
+  .mobile-section-backdrop {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 19;
+  }
+
+  /* 下拉动画 */
+  .dropdown-enter-active,
+  .dropdown-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  /* 主设置区域 */
+  .settings-main {
+    flex: 1;
+    padding: 0.75rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .config-section {
+    padding: 0;
+  }
+
+  .section-header {
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .section-desc {
+    font-size: 0.75rem;
+  }
+
+  /* 表单布局 */
+  .form-grid {
+    gap: 1rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-label {
+    width: 100%;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .form-control {
+    width: 100%;
+  }
+
+  .form-hint {
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
+  }
+
+  /* 开关 */
+  .toggle-switch {
+    align-self: flex-start;
+  }
+
+  /* 输入框样式 */
+  .form-control :deep(.el-input__wrapper),
+  .form-control :deep(.el-input-number) {
+    width: 100%;
+  }
+
+  .form-control :deep(.el-input__inner) {
+    font-size: 16px; /* 防止 iOS 缩放 */
+  }
+
+  .form-textarea {
+    font-size: 16px;
+  }
+
+  /* 关键词列表 */
+  .keyword-list {
+    gap: 0.375rem;
+  }
+
+  .keyword-item {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .add-keyword-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .add-keyword-row input {
+    font-size: 16px;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .add-keyword-row button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* 子区域分隔线 */
+  .subsection-divider {
+    margin: 1rem 0 0.5rem;
+    font-size: 0.65rem;
+  }
+
+  /* 保存栏 */
+  .save-bar {
+    bottom: 12px;
+    width: calc(100% - 24px);
+    max-width: none;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .save-bar-text {
+    font-size: 0.75rem;
+  }
+
+  .save-actions {
+    gap: 0.5rem;
+  }
+
+  .save-bar-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  /* 模态框 */
+  .modal-dialog {
+    width: calc(100% - 32px);
+    max-width: none;
+    margin: 16px;
+  }
+
+  .modal-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-text {
+    font-size: 0.8rem;
+  }
+
+  .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+
+  /* 缓存统计卡片 */
+  .cache-stats {
+    padding: 0.75rem;
+  }
+
+  .stat-row {
+    padding: 0.375rem 0;
+  }
+
+  .stat-label,
+  .stat-value {
+    font-size: 0.75rem;
+  }
+
+  .cache-actions {
+    gap: 0.5rem;
+  }
+
+  /* 信息框 */
+  .info-box {
+    padding: 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .view-header {
+    padding: 0.5rem;
+  }
+
+  .view-title {
+    font-size: 1rem;
+  }
+
+  .selector-current {
+    padding: 0.75rem;
+  }
+
+  .current-label {
+    font-size: 0.8125rem;
+  }
+
+  .selector-option {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .settings-main {
+    padding: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 0.9rem;
+  }
+
+  .form-label {
+    font-size: 0.75rem;
+  }
+
+  .form-hint {
+    font-size: 0.65rem;
+  }
+
+  .keyword-item {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+  }
 }
 </style>

@@ -219,4 +219,10 @@ export const authApi = {
   revokeRole: (userId: string, roleId: string) => call<{ success: boolean }>('grouphelper/auth/user/revoke', { userId, roleId }),
   getPermissions: () => call<PermissionNode[]>('grouphelper/auth/permission/list'),
   getRoleMembers: (roleId: string, fetchNames?: boolean) => call<RoleMember[]>('grouphelper/auth/role/members', { roleId, fetchNames }),
+  /** 批量导入成员到角色 */
+  importMembers: (roleId: string, userIds: string[]) => call<{ success: boolean; imported: number }>('grouphelper/auth/role/import-members', { roleId, userIds }),
+  /** 获取指定 authority 等级的用户列表 */
+  getUsersByAuthority: (authority: number) => call<RoleMember[]>('grouphelper/auth/users-by-authority', { authority }),
+  /** 获取指定群的管理员列表 */
+  getGuildAdmins: (guildId: string) => call<RoleMember[]>('grouphelper/auth/guild-admins', { guildId }),
 }

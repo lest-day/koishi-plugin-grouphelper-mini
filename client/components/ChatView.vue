@@ -2110,4 +2110,300 @@ const renderMessage = (msg: ChatMessage) => {
   background: var(--k-color-divider);
   margin: 4px 0;
 }
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 768px) {
+  .chat-view {
+    flex-direction: column;
+  }
+
+  /* Sidebar becomes horizontal session list */
+  .chat-sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 180px;
+    border-right: none;
+    border-bottom: 1px solid var(--k-color-divider);
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    padding: 10px 12px;
+  }
+
+  .sidebar-header h3 {
+    font-size: 14px;
+  }
+
+  .status-indicator {
+    font-size: 11px;
+  }
+
+  .connect-group-bar {
+    padding: 8px 12px;
+  }
+
+  .connect-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .session-list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .session-item {
+    flex-shrink: 0;
+    min-width: 140px;
+    max-width: 180px;
+    padding: 8px 10px;
+  }
+
+  .session-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .session-name {
+    font-size: 12px;
+  }
+
+  .session-preview {
+    font-size: 11px;
+  }
+
+  .session-meta {
+    display: none;
+  }
+
+  /* Chat main area */
+  .chat-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .chat-header {
+    padding: 10px 12px;
+    flex-shrink: 0;
+  }
+
+  .header-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .header-name {
+    font-size: 13px;
+  }
+
+  .header-id {
+    font-size: 11px;
+  }
+
+  .platform-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .message-list {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .message-row {
+    gap: 8px;
+  }
+
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .username {
+    font-size: 12px;
+  }
+
+  .timestamp {
+    font-size: 10px;
+  }
+
+  .message-bubble {
+    font-size: 13px;
+    padding: 8px 10px;
+    max-width: 85%;
+  }
+
+  /* Input area */
+  .chat-input-area {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    border-top: 1px solid var(--k-color-divider);
+  }
+
+  .input-row {
+    gap: 8px;
+  }
+
+  .input-row textarea {
+    font-size: 16px; /* Prevent iOS zoom */
+    min-height: 36px;
+    max-height: 100px;
+    padding: 8px 10px;
+  }
+
+  .send-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .pending-images {
+    gap: 6px;
+  }
+
+  .pending-image-item {
+    width: 50px;
+    height: 50px;
+  }
+
+  /* Members sidebar - hidden on mobile */
+  .members-sidebar {
+    display: none;
+  }
+
+  /* Connect dialog */
+  .connect-dialog {
+    width: 95%;
+    max-width: none;
+    margin: 16px;
+  }
+
+  .dialog-header {
+    padding: 12px 16px;
+  }
+
+  .dialog-header h3 {
+    font-size: 1rem;
+  }
+
+  .dialog-body {
+    padding: 16px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .form-group {
+    gap: 6px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 16px;
+    padding: 10px 12px;
+  }
+
+  .dialog-footer {
+    padding: 12px 16px;
+  }
+
+  /* Context menu */
+  .context-menu {
+    min-width: 120px;
+  }
+
+  .context-menu-item {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  /* Empty session state */
+  .empty-state {
+    padding: 40px 20px;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+  }
+
+  .empty-state p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-sidebar {
+    max-height: 150px;
+  }
+
+  .session-item {
+    min-width: 120px;
+    padding: 6px 8px;
+  }
+
+  .session-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .session-info {
+    gap: 2px;
+  }
+
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .message-bubble {
+    font-size: 12px;
+    padding: 6px 8px;
+    max-width: 90%;
+  }
+
+  .chat-input-area {
+    padding: 6px 8px;
+  }
+
+  .send-btn {
+    padding: 8px 12px;
+  }
+
+  .pending-image-item {
+    width: 40px;
+    height: 40px;
+  }
+}
 </style>

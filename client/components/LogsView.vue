@@ -1055,4 +1055,216 @@ const closeDetail = () => {
 .modal-leave-active .detail-modal {
   transition: transform 0.15s ease;
 }
+
+/* ========================================
+   移动端适配 (< 768px)
+   ======================================== */
+@media (max-width: 768px) {
+  .logs-view {
+    padding: 0;
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .header-left {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .view-title {
+    font-size: 1rem;
+  }
+
+  .record-count {
+    font-size: 0.7rem;
+    width: 100%;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .header-actions .btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    justify-content: center;
+  }
+
+  /* 搜索面板 */
+  .search-panel {
+    padding: 0.75rem;
+  }
+
+  .search-row-time {
+    margin-bottom: 0.75rem;
+  }
+
+  .search-field-time {
+    width: 100%;
+  }
+
+  .search-field-time .date-picker {
+    width: 100%;
+  }
+
+  .search-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .search-field label {
+    font-size: 0.65rem;
+  }
+
+  /* 表格改为卡片列表 */
+  .logs-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .table-header {
+    display: none;
+  }
+
+  .table-row {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    gap: 0.375rem;
+    border-bottom: 1px solid var(--k-color-divider);
+  }
+
+  .table-row .col {
+    width: 100% !important;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .table-row .col::before {
+    content: attr(data-label);
+    font-size: 0.65rem;
+    color: var(--fg3);
+    min-width: 50px;
+    text-transform: uppercase;
+  }
+
+  .table-row .col-time {
+    order: -1;
+    font-size: 0.7rem;
+  }
+
+  .table-row .col-status {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .resize-handle {
+    display: none;
+  }
+
+  /* 分页 */
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .page-info {
+    width: 100%;
+    text-align: center;
+    font-size: 0.7rem;
+  }
+
+  .page-btns {
+    gap: 0.25rem;
+  }
+
+  .page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+
+  /* 详情弹窗 */
+  .detail-overlay {
+    padding: 0.5rem;
+  }
+
+  .detail-modal {
+    max-width: 100%;
+    max-height: 90vh;
+  }
+
+  .detail-header {
+    padding: 0.75rem;
+  }
+
+  .detail-header h3 {
+    font-size: 0.85rem;
+  }
+
+  .detail-body {
+    padding: 0.75rem;
+    max-height: 65vh;
+  }
+
+  .detail-group h4 {
+    font-size: 0.7rem;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .detail-item .label {
+    font-size: 0.6rem;
+  }
+
+  .detail-item .value {
+    font-size: 0.75rem;
+  }
+}
+
+/* 小屏手机适配 (< 480px) */
+@media (max-width: 480px) {
+  .view-header {
+    padding: 0.5rem;
+  }
+
+  .view-title {
+    font-size: 0.9rem;
+  }
+
+  .search-panel {
+    padding: 0.5rem;
+  }
+
+  .search-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-row {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .page-btn {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+  }
+}
 </style>

@@ -937,4 +937,235 @@ onMounted(() => {
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--fg3);
 }
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 768px) {
+  .subscription-view {
+    padding: 12px;
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .view-title {
+    font-size: 1.25rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .toggle-wrapper {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .action-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .action-btn span {
+    display: none;
+  }
+
+  .btn-icon {
+    margin: 0;
+  }
+
+  /* Subscription cards */
+  .sub-list {
+    gap: 12px;
+  }
+
+  .sub-card {
+    padding: 12px;
+  }
+
+  .card-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sub-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sub-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sub-id {
+    font-size: 13px;
+  }
+
+  .sub-id-suffix {
+    font-size: 11px;
+  }
+
+  .sub-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  /* Features grid */
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .feature-item {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+
+  /* Dialog */
+  .dialog-card {
+    width: 95%;
+    max-width: none;
+    max-height: 90vh;
+    margin: 16px;
+  }
+
+  .dialog-header {
+    padding: 12px 16px;
+  }
+
+  .dialog-title {
+    font-size: 1rem;
+  }
+
+  .dialog-body {
+    padding: 16px;
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .form-grid {
+    gap: 12px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .form-control {
+    width: 100%;
+  }
+
+  .form-control input,
+  .form-control select {
+    font-size: 16px; /* Prevent iOS zoom */
+    padding: 10px 12px;
+  }
+
+  .type-options {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .type-option {
+    flex: none;
+    width: 100%;
+    padding: 12px;
+  }
+
+  .feature-toggles {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .feature-toggle label {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .dialog-footer {
+    padding: 12px 16px;
+  }
+
+  /* Confirm dialog */
+  .confirm-dialog {
+    width: 90%;
+    max-width: none;
+    margin: 16px;
+  }
+
+  .confirm-body {
+    padding: 16px;
+  }
+
+  .warning-box {
+    padding: 10px;
+    font-size: 11px;
+  }
+
+  .confirm-text {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .subscription-view {
+    padding: 8px;
+  }
+
+  .header-actions {
+    flex-direction: column;
+  }
+
+  .toggle-wrapper {
+    width: 100%;
+  }
+
+  .btn-group {
+    width: 100%;
+  }
+
+  .action-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .action-btn span {
+    display: inline;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-toggles {
+    grid-template-columns: 1fr;
+  }
+
+  .sub-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .sub-id-suffix {
+    margin-left: 0;
+  }
+}
 </style>
