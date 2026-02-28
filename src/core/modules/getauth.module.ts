@@ -50,6 +50,7 @@ export class GetAuthModule extends BaseModule {
     })
       .alias('gtauth')
       .alias('ga')
+      .alias('查询角色')
       .example('getauth @可爱猫娘')
       .example('getauth 2038794363')
       .action(async ({ session }, target) => {

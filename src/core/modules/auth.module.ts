@@ -98,6 +98,9 @@ export class AuthModule extends BaseModule {
       permDesc: '列出所有可用角色',
       usage: '显示系统中所有可分配的角色'
     })
+      .alias('gauth-list')
+      .alias('角色列表')
+      .alias('列出角色')
       .action(async ({ session }) => {
         const roles = this.ctx.groupHelper.auth.getRoles()
         if (roles.length === 0) {
@@ -124,12 +127,13 @@ export class AuthModule extends BaseModule {
       usage: '查看指定用户所拥有的角色',
       examples: ['gauth.info @用户']
     })
-      .alias('gauth.info')
-      .example('gauth.info @可爱猫娘')
-      .example('gauth.info 123456')
+      .alias('gauth-info')
+      .alias('查看角色')
+      .example('gauth-info @可爱猫娘')
+      .example('gauth-info 123456')
       .action(async ({ session }, target) => {
         if (!target) return '请指定要查询的用户'
-        
+
         // target 可能是 User 对象或字符串，提取纯用户 ID（去除平台前缀）
         let rawId = typeof target === 'string' ? target : (target as any)?.id || String(target)
         // 去除平台前缀（如 onebot:123456 -> 123456）
@@ -138,7 +142,7 @@ export class AuthModule extends BaseModule {
 
         const userRoleIds = this.ctx.groupHelper.auth.getUserRoleIds(userId)
         const allRoles = this.ctx.groupHelper.auth.getRoles()
-        
+
         if (userRoleIds.length === 0) {
           return `用户 ${userId} 暂无自定义角色`
         }
@@ -162,10 +166,11 @@ export class AuthModule extends BaseModule {
       usage: '给指定用户分配角色',
       examples: ['gauth.add @用户 admin']
     })
-      .alias('gauth.add')
-      .example('gauth.add @可爱猫娘 admin')
-      .example('gauth.add @可爱猫娘 管理员')
-      .example('gauth.add 123456 moderator')
+      .alias('gauth-add')
+      .alias('添加角色')
+      .example('gauth-add @可爱猫娘 admin')
+      .example('gauth-add @可爱猫娘 管理员')
+      .example('gauth-add 123456 moderator')
       .action(async ({ session }, target, roleIdentifier) => {
         if (!target) return '请指定要操作的用户'
         if (!roleIdentifier) return '请指定要添加的角色 ID 或名称'
@@ -206,11 +211,12 @@ export class AuthModule extends BaseModule {
       usage: '从指定用户撤销角色',
       examples: ['gauth.remove @用户 admin']
     })
-      .alias('gauth.remove')
-      .alias('gauth.rm')
-      .example('gauth.remove @可爱猫娘 admin')
-      .example('gauth.remove @可爱猫娘 管理员')
-      .example('gauth.rm 123456 moderator')
+      .alias('gauth-remove')
+      .alias('gauth-rm')
+      .alias('移除角色')
+      .example('gauth-remove @可爱猫娘 admin')
+      .example('gauth-remove @可爱猫娘 管理员')
+      .example('gauth-rm 123456 moderator')
       .action(async ({ session }, target, roleIdentifier) => {
         if (!target) return '请指定要操作的用户'
         if (!roleIdentifier) return '请指定要移除的角色 ID 或名称'

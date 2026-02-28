@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-grouphelper-mini",
   "description": "精简修改版 自用",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "exports": {
