@@ -65,12 +65,12 @@ export class AntiRecallModule extends BaseModule {
     if (!groupConfigs[guildId].antiRecall) {
       groupConfigs[guildId].antiRecall = { enabled: false }
     }
-    
+
     groupConfigs[guildId].antiRecall = {
       ...groupConfigs[guildId].antiRecall,
       ...updates
     }
-    
+
     this.data.groupConfig.setAll(groupConfigs)
   }
 
@@ -326,7 +326,7 @@ export class AntiRecallModule extends BaseModule {
   private registerCommands(): void {
     // antirecall 命令 - 查询撤回记录
     this.registerCommand({
-      name: 'antirecall',
+      name: 'manage.antirecall',
       desc: '查询用户撤回消息记录',
       args: '<input:text>',
       permNode: 'antirecall',
@@ -334,6 +334,7 @@ export class AntiRecallModule extends BaseModule {
       usage: '查询指定用户的撤回消息历史',
       examples: ['antirecall @用户', 'antirecall 123456789 5']
     })
+      .alias('antirecall')
       .alias('撤回查询')
       .usage('查询用户的撤回消息记录\n示例：\nantirecall @用户\nantirecall 123456789\nantirecall @用户 5\nantirecall 123456789 10 群号')
       .example('antirecall @用户')
@@ -430,13 +431,14 @@ export class AntiRecallModule extends BaseModule {
 
     // antirecall-config 命令 - 配置防撤回
     this.registerCommand({
-      name: 'antirecall-config',
+      name: 'manage.antirecall.config',
       desc: '防撤回功能配置',
-      permNode: 'antirecall-config',
+      permNode: 'antirecall.config',
       permDesc: '配置防撤回功能',
       usage: '-e 启用/禁用，-d 保留天数，-m 每人最大记录数',
       examples: ['antirecall-config -e true', 'antirecall-config -d 7 -m 100']
     })
+      .alias('antirecall-config')
       .alias('防撤回配置')
       .usage('配置群组防撤回功能\n选项：\n  -e <true/false> 启用/禁用\n  -d <days> 设置消息保留天数\n  -m <count> 设置每人最大记录数')
       .option('enabled', '-e <enabled:string> 启用或禁用防撤回功能')
@@ -444,7 +446,7 @@ export class AntiRecallModule extends BaseModule {
       .option('max', '-m <max:number> 设置每用户最大记录数')
       .action(async ({ session, options }) => {
         if (!session.guildId) return '此命令只能在群聊中使用'
-        
+
         if (Object.keys(options).length === 0) {
           return '请指定要配置的选项：-e (启用/禁用), -d (天数), -m (最大条数)'
         }
@@ -492,12 +494,13 @@ export class AntiRecallModule extends BaseModule {
 
     // antirecall.status 命令 - 查看状态
     this.registerCommand({
-      name: 'antirecall.status',
+      name: 'manage.antirecall.status',
       desc: '查看防撤回功能状态',
       permNode: 'antirecall.status',
       permDesc: '查看防撤回状态',
       usage: '显示当前群防撤回配置和统计信息'
     })
+      .alias('antirecall.status')
       .action(async ({ session }) => {
         const status = this.getStatus(session.guildId)
         const { globalEnabled, groupSpecificEnabled, effectiveConfig, statistics } = status
@@ -533,12 +536,13 @@ export class AntiRecallModule extends BaseModule {
 
     // antirecall.clear 命令 - 清理记录
     this.registerCommand({
-      name: 'antirecall.clear',
+      name: 'manage.antirecall.clear',
       desc: '清理所有撤回记录',
       permNode: 'antirecall.clear',
       permDesc: '清理撤回记录（高危）',
       usage: '清除所有已保存的撤回消息记录'
     })
+      .alias('antirecall.clear')
       .action(async ({ session }) => {
         this.clearAllRecords()
         this.log(session, 'antirecall.clear', '', '成功：清理所有撤回记录')

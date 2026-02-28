@@ -28,7 +28,7 @@ export class crossGroupModule extends BaseModule {
    */
   private registerQuitGroupCommand(): void {
     this.registerCommand({
-      name: 'quit-group',
+      name: 'manage.grouphelper.quit-group',
       desc: '退出指定群聊',
       args: '<groupId:string>',
       permNode: 'quit-group',
@@ -36,7 +36,9 @@ export class crossGroupModule extends BaseModule {
       usage: '让机器人退出指定的群聊',
       examples: ['quit-group 123456789']
     })
-      .example('quit-group 123456789')
+      .alias("quit-group")
+      .alias("grouphelper.quit-group")
+      .example('grouphelper quit-group 123456789')
       .action(async ({ session }, groupId) => {
         if (!groupId) return '喵呜...请指定要退出的群聊ID喵~'
         try {
@@ -55,15 +57,17 @@ export class crossGroupModule extends BaseModule {
    */
   private registerSendCommand(): void {
     this.registerCommand({
-      name: 'send',
+      name: 'manage.grouphelper.send',
       desc: '向指定群发送消息',
       args: '<groupId:string>',
       permNode: 'send',
       permDesc: '远程发送群消息',
       usage: '回复一条消息后使用，-s 静默发送（不显示发送者）',
-      examples: ['send 123456789', 'send 123456789 -s']
+      examples: ['grouphelper send 123456789', 'send 123456789 -s']
     })
-      .example('send 123456789')
+      .alias("grouphelper.send")
+      .alias("send")
+      .example('grouphelper send 123456789')
       .option('s', '-s 静默发送，不显示发送者信息')
       .action(async ({ session, options }, groupId) => {
         if (!session.quote) return '喵喵！请回复要发送的消息呀~'
@@ -74,7 +78,7 @@ export class crossGroupModule extends BaseModule {
           } else {
             await session.bot.sendMessage(groupId, '用户' + session.userId + '远程投送消息：\n' + session.quote.content)
           }
-          
+
           if (options.s) {
             this.logCommand(session, 'send', groupId, `成功：已静默发送消息：${session.quote.messageId}`)
           } else {

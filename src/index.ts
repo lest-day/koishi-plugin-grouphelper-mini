@@ -1,10 +1,12 @@
 import { Context, Logger } from 'koishi'
-import type {} from '@koishijs/plugin-console'
+import type { } from '@koishijs/plugin-console'
 import { resolve } from 'path'
 
 import { GroupHelperService, registerWebSocketAPI } from './core'
-import { WarnModule, KeywordModule, WelcomeModule, RepeatModule, DiceModule, BanmeModule, AntiRecallModule, AIModule, ConfigModule, LogModule, SubscriptionModule, HelpModule, ReportModule, GetAuthModule, AuthModule, EventModule, StatusModule,
-  MemberManageModule, MessageManageModule, OrderManageModule, AntirepeatModule, crossGroupModule} from './core/modules'
+import {
+  WarnModule, KeywordModule, WelcomeModule, RepeatModule, DiceModule, BanmeModule, AntiRecallModule, AIModule, ConfigModule, LogModule, SubscriptionModule, HelpModule, ReportModule, GetAuthModule, AuthModule, EventModule, StatusModule,
+  MemberManageModule, MessageManageModule, OrderManageModule, AntirepeatModule, crossGroupModule
+} from './core/modules'
 
 // 插件元信息
 export const name = 'grouphelper'
@@ -96,6 +98,19 @@ export function apply(ctx: Context) {
       ctx.groupHelper.registerModule(eventModule)
       ctx.groupHelper.registerModule(statusModule)
       ctx.groupHelper.registerModule(crossGroupManageModule)
+
+      //类别名称注册
+      ctx.command("smart", "AI智能功能")
+      ctx.command("play", "娱乐类功能")
+      ctx.command("manage", "管理类功能")
+      ctx.command("manage.welbye", "加退群提醒")
+      ctx.command("manage.role", "角色功能管理")
+      ctx.command("manage.order", "秩序管理功能")
+      ctx.command("manage.message", "群聊消息管理")
+      ctx.command("manage.member", "群聊成员管理")
+      ctx.command("manage.keyword", "关键词管理")
+      ctx.command("manage.antirecall", "防撤回功能管理")
+      ctx.command("manage.grouphelper", "GroupHelper系统")
 
       // 初始化所有模块
       await ctx.groupHelper.initModules()

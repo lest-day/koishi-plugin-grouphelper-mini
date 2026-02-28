@@ -31,7 +31,7 @@ export class MemberManageModule extends BaseModule {
    */
   private registerKickCommand(): void {
     this.registerCommand({
-      name: 'kick',
+      name: 'manage.member.kick',
       desc: '踢出用户',
       args: '<input:text>',
       permNode: 'kick',
@@ -39,6 +39,9 @@ export class MemberManageModule extends BaseModule {
       usage: '支持 @用户 或 QQ号，可指定群号，-b 加入黑名单',
       examples: ['kick @用户', 'kick 123456789', 'kick @用户 -b']
     })
+      .alias('kick')
+      .alias('踢')
+      .alias('踢出')
       .example('kick @用户')
       .example('kick 123456789')
       .example('kick @用户 群号')
@@ -112,13 +115,15 @@ export class MemberManageModule extends BaseModule {
    */
   private registerAdminCommands(): void {
     this.registerCommand({
-      name: 'admin',
+      name: 'manage.member.admin',
       desc: '设置管理员',
       args: '<user:user>',
-      permNode: 'admin',
+      permNode: 'manage.member.admin',
       permDesc: '设置群管理员',
       examples: ['admin @用户']
     })
+      .alias('admin')
+      .alias('设为管理')
       .example('admin @用户')
       .action(async ({ session }, user) => {
         if (!user) return '请指定用户'
@@ -135,13 +140,15 @@ export class MemberManageModule extends BaseModule {
       })
 
     this.registerCommand({
-      name: 'unadmin',
+      name: 'manage.member.unadmin',
       desc: '取消管理员',
       args: '<user:user>',
       permNode: 'unadmin',
       permDesc: '取消群管理员',
       examples: ['unadmin @用户']
     })
+      .alias('unadmin')
+      .alias('取消管理')
       .example('unadmin @用户')
       .action(async ({ session }, user) => {
         if (!user) return '请指定用户'
@@ -166,13 +173,15 @@ export class MemberManageModule extends BaseModule {
     const titleConfig = this.config.setTitle || { enabled: false, authority: 3, maxLength: 18 }
     
     this.registerCommand({
-      name: 'title',
+      name: 'manage.member.title',
       desc: '群头衔管理',
-      permNode: 'title',
+      permNode: 'manage.member.title',
       permDesc: '设置群头衔',
       usage: '-s <文本> 设置头衔，-r 移除头衔，-u @用户 指定用户',
       examples: ['title -s 大佬', 'title -r', 'title -s 萌新 -u @用户']
     })
+      .alias('title')
+      .alias('头衔')
       .option('s', '-s <text> 设置头衔')
       .option('r', '-r 移除头衔')
       .option('u', '-u <user:user> 指定用户')
@@ -212,12 +221,14 @@ export class MemberManageModule extends BaseModule {
    */
   private registerUnbanAllPplCommand(): void {
     this.registerCommand({
-      name: 'unban-allppl',
+      name: 'manage.member.unban-allppl',
       desc: '解除所有人禁言',
-      permNode: 'unban-allppl',
+      permNode: 'manage.member.unban-allppl',
       permDesc: '批量解除所有禁言',
       usage: '解除当前群所有被禁言成员的禁言状态'
     })
+      .alias('unban-allppl')
+      .alias('解除所有禁言')
       .action(async ({ session }) => {
         if (!session.guildId) return '喵呜...这个命令只能在群里用喵~'
 

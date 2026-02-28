@@ -40,14 +40,15 @@ export class GetAuthModule extends BaseModule {
    */
   private registerCommands(): void {
     this.registerCommand({
-      name: 'getauth',
+      name: 'manage.role.getauth',
       desc: '获取指定成员状态喵',
       args: '<target:text>',
-      permNode: 'getauth',
+      permNode: 'manage.role.getauth',
       permDesc: '查询用户权限状态',
       usage: '查询用户的群角色、禁言状态、权限等级',
       examples: ['getauth @用户', 'getauth 123456789']
     })
+      .alias('gtauth')
       .alias('ga')
       .example('getauth @可爱猫娘')
       .example('getauth 2038794363')

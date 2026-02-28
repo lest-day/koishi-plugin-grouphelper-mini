@@ -25,13 +25,15 @@ export class DiceModule extends BaseModule {
   private registerCommands(): void {
     // dice 功能开关
     this.registerCommand({
-      name: 'dice-config',
+      name: 'play.dice-config',
       desc: '掷骰子功能开关',
       permNode: 'dice-config',
       permDesc: '配置掷骰子功能',
       usage: '-e true/false 启用禁用，-l 数字 设置结果长度限制',
       examples: ['dice-config -e true', 'dice-config -l 500']
     })
+      .alias("dice-config")
+      .alias("配置骰子功能")
       .option('e', '-e <enabled:string> 启用或禁用掷骰子功能')
       .option('l', '-l <length:number> 设置掷骰子结果长度限制')
       .action(async ({ session, options }) => {
@@ -73,7 +75,7 @@ export class DiceModule extends BaseModule {
 
     // 随机数生成器，格式 dice <面数> [个数]
     this.registerCommand({
-      name: 'dice',
+      name: 'play.dice',
       desc: '掷骰子',
       args: '<sides:string> [count:string]',
       permNode: 'dice',
@@ -82,6 +84,8 @@ export class DiceModule extends BaseModule {
       usage: '掷指定面数的骰子，支持 XdY 语法',
       examples: ['dice 6', 'dice 20 3', '2d6']
     })
+      .alias("dice")
+      .alias("掷骰子")
       .example('dice 6')
       .example('dice 20 3')
       .action(async ({ session }, sides_str, count_str = 1) => {

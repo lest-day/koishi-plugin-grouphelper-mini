@@ -24,7 +24,7 @@ export class AntirepeatModule extends BaseModule {
    */
   private registerAntiRepeatCommand(): void {
     this.registerCommand({
-      name: 'antirepeat',
+      name: 'manage.message.antirepeat',
       desc: '复读管理',
       args: '[threshold:number]',
       permNode: 'antirepeat',
@@ -32,6 +32,8 @@ export class AntirepeatModule extends BaseModule {
       usage: '设置复读阈值并启用，0为关闭',
       examples: ['antirepeat 5', 'antirepeat 0']
     })
+      .alias('antirepeat')
+      .alias('复读管理')
       .action(async ({ session }, threshold) => {
         if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
 

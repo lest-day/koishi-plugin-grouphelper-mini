@@ -31,32 +31,32 @@ export class AIModule extends BaseModule {
   async onInit(): Promise<void> {
     // 初始化数据文件
     this.initDataFiles()
-    
+
     // 加载已有上下文
     this.loadContexts()
-    
+
     // 定期清理过期上下文
     this.cleanupInterval = setInterval(() => this.cleanExpiredContexts(), 10 * 60 * 1000)
-    
+
     // 注册命令
     this.registerCommands()
-    
+
     // 注册中间件
     this.registerMiddleware()
-    
+
     this.data.writeLog('[ai] Module initialized')
   }
 
   async onDispose(): Promise<void> {
     // 保存上下文
     this.saveContexts()
-    
+
     // 清理定时器
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval)
       this.cleanupInterval = null
     }
-    
+
     this.data.writeLog('[ai] Module disposed')
   }
 
@@ -140,7 +140,7 @@ export class AIModule extends BaseModule {
 
     // 检查system prompt是否需要更新
     if (context.messages[0].role === 'system' &&
-        context.messages[0].content !== systemPrompt) {
+      context.messages[0].content !== systemPrompt) {
       context.messages[0].content = systemPrompt
     }
 
@@ -314,7 +314,7 @@ export class AIModule extends BaseModule {
     }
 
     try {
-      let translatePrompt = config.translatePrompt || 
+      let translatePrompt = config.translatePrompt ||
         '你是一个翻译助手。请将用户的文本准确翻译，保持原文的风格和语气。如果是中文则翻译为英文，如果是其他语言则翻译为中文。不要添加任何解释或额外内容。'
 
       if (customPrompt) {
@@ -415,7 +415,7 @@ export class AIModule extends BaseModule {
   private registerCommands(): void {
     // ai 命令
     this.registerCommand({
-      name: 'ai',
+      name: 'smart.ai',
       desc: '与AI进行对话',
       args: '[content:text]',
       permNode: 'ai',
@@ -424,6 +424,7 @@ export class AIModule extends BaseModule {
       usage: '-r 重置对话上下文',
       examples: ['ai 今天天气怎么样', 'ai -r']
     })
+      .alias('ai')
       .option('reset', '-r 重置对话上下文')
       .action(async ({ session, options }, content) => {
         if (!session) return
@@ -453,7 +454,7 @@ export class AIModule extends BaseModule {
 
     // translate 命令
     this.registerCommand({
-      name: 'translate',
+      name: 'smart.translate',
       desc: '使用AI翻译文本',
       args: '<text:text>',
       permNode: 'translate',
@@ -462,6 +463,9 @@ export class AIModule extends BaseModule {
       usage: '翻译文本，可回复消息翻译，-p 自定义提示词',
       examples: ['tsl Hello World', 'tsl -p 翻译成日语 你好']
     })
+      .alias('translate')
+      .alias('请求翻译')
+      .alias('翻译这段话')
       .alias('tsl')
       .option('prompt', '-p <prompt:text> 自定义翻译提示词')
       .action(async ({ session, options }, text) => {
@@ -504,12 +508,14 @@ export class AIModule extends BaseModule {
 
     // ai-config 命令
     this.registerCommand({
-      name: 'ai-config',
+      name: 'smart.ai-config',
       desc: '配置AI功能',
       permNode: 'ai-config',
       permDesc: '配置AI功能',
       usage: '-e 启用/禁用，-p 系统提示词，-tp 翻译提示词，-r 重置'
     })
+      .alias('ai-config')
+      .alias('配置AI')
       .option('enabled', '-e <enabled:boolean> 是否在本群启用AI功能')
       .option('prompt', '-p <prompt:text> 设置本群特定的系统提示词')
       .option('tprompt', '-tp <prompt:text> 设置本群特定的翻译提示词')
@@ -578,7 +584,7 @@ export class AIModule extends BaseModule {
     this.ctx.middleware(async (session, next) => {
       // 检查是否@了机器人
       if (!session.elements?.some(el => el.type === 'at' && el.attrs?.id === session.selfId) ||
-          session.content?.startsWith('/')) {
+        session.content?.startsWith('/')) {
         return next()
       }
 

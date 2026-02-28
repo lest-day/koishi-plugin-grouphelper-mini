@@ -62,17 +62,17 @@ export class WarnModule extends BaseModule {
             // 旧格式2: val 是 count
             if (!migratedData[guildId]) migratedData[guildId] = {}
             if (!migratedData[guildId][userId]) {
-                migratedData[guildId][userId] = {
-                    count: val,
-                    timestamp: Date.now()
-                }
+              migratedData[guildId][userId] = {
+                count: val,
+                timestamp: Date.now()
+              }
             }
             hasMigration = true
           } else if (typeof val === 'object' && val && 'count' in val) {
-             // 已经是新格式，或者是部分新格式，保留
-             if (!migratedData[guildId]) migratedData[guildId] = {}
-             // @ts-ignore
-             migratedData[guildId][userId] = val
+            // 已经是新格式，或者是部分新格式，保留
+            if (!migratedData[guildId]) migratedData[guildId] = {}
+            // @ts-ignore
+            migratedData[guildId][userId] = val
           }
         }
       }
@@ -82,25 +82,25 @@ export class WarnModule extends BaseModule {
       // 清空旧数据并写入新数据
       // 注意：这里我们直接覆盖，因为 migratedData 包含了所有我们需要保留的数据
       // 但为了安全，我们应该先清除旧的，再设置新的
-      
+
       // 1. 找出所有旧格式的 key 并删除
       for (const key of Object.keys(allWarns)) {
-          if (key.includes(':')) {
-              this.data.warns.delete(key)
-          } else {
-             // 检查 value 是否包含数字类型的属性 (旧格式2)
-             const val = allWarns[key]
-             let isOld = false
-             for(const v of Object.values(val as any)) {
-                 if(typeof v === 'number') {
-                     isOld = true;
-                     break;
-                 }
-             }
-             if(isOld) {
-                 this.data.warns.delete(key)
-             }
+        if (key.includes(':')) {
+          this.data.warns.delete(key)
+        } else {
+          // 检查 value 是否包含数字类型的属性 (旧格式2)
+          const val = allWarns[key]
+          let isOld = false
+          for (const v of Object.values(val as any)) {
+            if (typeof v === 'number') {
+              isOld = true;
+              break;
+            }
           }
+          if (isOld) {
+            this.data.warns.delete(key)
+          }
+        }
       }
 
       // 2. 写入新数据
@@ -108,7 +108,7 @@ export class WarnModule extends BaseModule {
         // @ts-ignore
         this.data.warns.set(guildId, records)
       }
-      
+
       this.data.warns.flush()
       this.ctx.logger('grouphelper').info('警告数据已迁移到新格式')
     }
@@ -120,41 +120,50 @@ export class WarnModule extends BaseModule {
   private registerCommands(): void {
     // warn 命令 - 警告用户
     this.registerCommand({
-      name: 'warn',
+      name: 'manage.order.warn',
       desc: '警告用户',
       args: '<user:user> [count:number]',
       permNode: 'add',
       permDesc: '添加警告记录',
       usage: '警告用户，达到阈值后自动禁言',
       examples: ['warn @用户', 'warn @用户 3']
-    }).action(async ({ session }, user, count = 1) => {
-      return this.handleWarn(session, user, count)
     })
+      .alias('warn')
+      .alias('警告')
+      .action(async ({ session }, user, count = 1) => {
+        return this.handleWarn(session, user, count)
+      })
 
     // warn.clear 命令 - 清除用户警告
     this.registerCommand({
-      name: 'warn.clear',
+      name: 'manage.order.warn.clear',
       desc: '清除用户警告',
       args: '<user:user>',
       permNode: 'clear',
       permDesc: '清除用户的警告记录',
       examples: ['warn.clear @用户']
-    }).action(async ({ session }, user) => {
-      return this.handleClearWarn(session, user)
     })
+      .alias('warn-clear')
+      .alias('取消警告')
+      .action(async ({ session }, user) => {
+        return this.handleClearWarn(session, user)
+      })
 
     // warn.list 命令 - 查看警告列表
     this.registerCommand({
-      name: 'warn.list',
+      name: 'manage.order.warn.list',
       desc: '查看警告列表',
       args: '[user:user]',
       permNode: 'list',
       permDesc: '查看警告记录列表',
       usage: '不指定用户则显示本群所有警告',
       examples: ['warn.list', 'warn.list @用户']
-    }).action(async ({ session }, user) => {
-      return this.handleListWarns(session, user)
     })
+      .alias('warn-list')
+      .alias('警告列表')
+      .action(async ({ session }, user) => {
+        return this.handleListWarns(session, user)
+      })
   }
 
   /**
@@ -196,7 +205,7 @@ export class WarnModule extends BaseModule {
    */
   private addWarn(guildId: string, userId: string, count: number): number {
     const guildWarns = this.data.warns.get(guildId) || {}
-    
+
     if (!guildWarns[userId]) {
       guildWarns[userId] = {
         count: 0,
@@ -317,7 +326,7 @@ export class WarnModule extends BaseModule {
     if (user) {
       // 查看指定用户的警告
       const userId = String(user).split(':')[1]
-      
+
       if (!guildWarns || !guildWarns[userId]) {
         return `用户 ${userId} 在本群没有警告记录`
       }
@@ -362,7 +371,7 @@ export class WarnModule extends BaseModule {
   getGuildWarns(guildId: string): Array<{ userId: string; count: number; timestamp: number }> {
     const result: Array<{ userId: string; count: number; timestamp: number }> = []
     const guildWarns = this.data.warns.get(guildId)
-    
+
     if (guildWarns) {
       for (const [userId, record] of Object.entries(guildWarns)) {
         result.push({

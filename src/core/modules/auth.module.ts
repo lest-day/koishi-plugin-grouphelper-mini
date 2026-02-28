@@ -83,18 +83,18 @@ export class AuthModule extends BaseModule {
   private registerCommands(): void {
     // gauth - 角色管理主命令
     this.registerCommand({
-      name: 'gauth',
+      name: 'manage.role.gauth',
       desc: '管理用户角色',
-      permNode: 'gauth',
+      permNode: 'manage.role.gauth',
       permDesc: '管理用户角色（主命令）',
       usage: '角色管理系统，使用子命令操作'
     })
 
     // gauth.list - 列出所有可用角色
     this.registerCommand({
-      name: 'gauth.list',
+      name: 'manage.role.gauth.list',
       desc: '列出所有可用角色',
-      permNode: 'gauth.list',
+      permNode: 'manage.role.gauth.list',
       permDesc: '列出所有可用角色',
       usage: '显示系统中所有可分配的角色'
     })
@@ -116,14 +116,15 @@ export class AuthModule extends BaseModule {
 
     // gauth.info <user> - 查看用户角色
     this.registerCommand({
-      name: 'gauth.info',
+      name: 'manage.role.gauth.info',
       desc: '查看用户的角色',
       args: '<target:user>',
-      permNode: 'gauth.info',
+      permNode: 'manage.role.gauth.info',
       permDesc: '查看用户的角色',
       usage: '查看指定用户所拥有的角色',
       examples: ['gauth.info @用户']
     })
+      .alias('gauth.info')
       .example('gauth.info @可爱猫娘')
       .example('gauth.info 123456')
       .action(async ({ session }, target) => {
@@ -153,14 +154,15 @@ export class AuthModule extends BaseModule {
 
     // gauth.add <user> <role> - 给用户添加角色
     this.registerCommand({
-      name: 'gauth.add',
+      name: 'manage.role.gauth.add',
       desc: '给用户添加角色',
       args: '<target:user> <roleIdentifier:text>',
-      permNode: 'gauth.add',
+      permNode: 'manage.role.gauth.add',
       permDesc: '给用户添加角色',
       usage: '给指定用户分配角色',
       examples: ['gauth.add @用户 admin']
     })
+      .alias('gauth.add')
       .example('gauth.add @可爱猫娘 admin')
       .example('gauth.add @可爱猫娘 管理员')
       .example('gauth.add 123456 moderator')
@@ -196,14 +198,15 @@ export class AuthModule extends BaseModule {
 
     // gauth.remove <user> <role> - 从用户移除角色
     this.registerCommand({
-      name: 'gauth.remove',
+      name: 'manage.role.gauth.remove',
       desc: '从用户移除角色',
       args: '<target:user> <roleIdentifier:text>',
-      permNode: 'gauth.remove',
+      permNode: 'manage.role.gauth.remove',
       permDesc: '从用户移除角色',
       usage: '从指定用户撤销角色',
       examples: ['gauth.remove @用户 admin']
     })
+      .alias('gauth.remove')
       .alias('gauth.rm')
       .example('gauth.remove @可爱猫娘 admin')
       .example('gauth.remove @可爱猫娘 管理员')

@@ -35,12 +35,13 @@ export class ConfigModule extends BaseModule {
     this.ctx.groupHelper.auth.registerPermission('config.warn', '警告管理', '管理警告记录（添加/移除）', this.meta.description)
 
     this.registerCommand({
-      name: 'config',
+      name: 'manage.grouphelper.config',
       desc: '配置管理',
       permNode: 'config',
       permDesc: '配置管理主命令',
       usage: '-t 显示配置，-b 黑名单管理，-w 警告管理'
     })
+      .alias('config')
       .option('t', '-t 显示所有记录')
       .option('b', '-b 黑名单管理')
       .option('w', '-w 警告管理')
@@ -155,7 +156,7 @@ export class ConfigModule extends BaseModule {
     }
 
     const baseMaxMillis = this.config.banme.baseMax * 60 * 1000
-    const additionalMinutes = Math.floor(Math.pow(currentBanMe.count, 1/3) * this.config.banme.growthRate)
+    const additionalMinutes = Math.floor(Math.pow(currentBanMe.count, 1 / 3) * this.config.banme.growthRate)
     const maxDuration = formatDuration(baseMaxMillis + (additionalMinutes * 60 * 1000))
 
     // 计算当前概率
@@ -278,11 +279,11 @@ ${formatMutes || '无记录'}`
       }
       guildWarns[options.a].count += parseInt(content) || 1
       guildWarns[options.a].timestamp = Date.now()
-      
+
       // @ts-ignore
       this.data.warns.set(session.guildId, guildWarns)
       this.data.warns.flush()
-      
+
       this.log(session, 'config -w -a', options.a, `增加到 ${guildWarns[options.a].count} 次`)
       return `已增加 ${options.a} 的警告次数，当前为：${guildWarns[options.a].count}`
     }
@@ -291,7 +292,7 @@ ${formatMutes || '无记录'}`
     if (options.r) {
       if (guildWarns[options.r]) {
         guildWarns[options.r].count -= parseInt(content) || 1
-        
+
         let resultMsg = ''
         if (guildWarns[options.r].count <= 0) {
           delete guildWarns[options.r]
@@ -302,7 +303,7 @@ ${formatMutes || '无记录'}`
           resultMsg = `已减少 ${options.r} 的警告次数，当前为：${guildWarns[options.r].count}`
           this.log(session, 'config -w -r', options.r, `减少到 ${guildWarns[options.r].count} 次`)
         }
-        
+
         if (Object.keys(guildWarns).length === 0) {
           this.data.warns.delete(session.guildId)
         } else {
@@ -310,7 +311,7 @@ ${formatMutes || '无记录'}`
           this.data.warns.set(session.guildId, guildWarns)
         }
         this.data.warns.flush()
-        
+
         return resultMsg
       }
       return '未找到该用户的警告记录'

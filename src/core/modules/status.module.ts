@@ -28,13 +28,14 @@ export class StatusModule extends BaseModule {
 
   private registerCommands(): void {
     this.registerCommand({
-      name: 'gstatus',
+      name: 'manage.grouphelper.gstatus',
       desc: '查看系统状态',
       permNode: 'status.view',
       permDesc: '查看系统状态图片',
       skipAuth: true, // 允许直接调用
       usage: '生成系统状态信息图片'
     })
+      .alias('gstatus')
       .action(async ({ session }) => {
         // 检查 puppeteer 服务
         if (!this.ctx.puppeteer) {

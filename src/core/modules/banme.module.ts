@@ -236,7 +236,7 @@ export class BanmeModule extends BaseModule {
       }
 
       await session.bot.muteGuildMember(session.guildId, session.userId, milliseconds)
-      
+
       // 更新 mutes 存储 (嵌套结构: guildId -> userId -> MuteRecord)
       const allMutes = this.data.mutes.getAll()
       if (!allMutes[session.guildId]) {
@@ -280,11 +280,15 @@ export class BanmeModule extends BaseModule {
   private registerCommands(): void {
     // banme 主命令 - 所有人都可以使用
     this.registerCommand({
-      name: 'banme',
+      name: 'play.banme',
       desc: '随机禁言自己',
       skipAuth: true, // 所有人都能使用
       usage: '随机抽取禁言时长，支持抽卡保底系统'
-    }).action(async ({ session }) => {
+    })
+    .alias("banme")
+    .alias("随机自我禁言")
+    .alias("随机禁言自己")
+    .action(async ({ session }) => {
       if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
       if (session.quote) return '喵喵？回复消息时不能使用这个命令哦~'
       return this.executeBanme(session)
@@ -292,98 +296,109 @@ export class BanmeModule extends BaseModule {
 
     // 输出形似字符映射表
     this.registerCommand({
-      name: 'banme.similar',
+      name: 'play.banme.similar',
       desc: '查看形似字符映射表',
       permDesc: '查看 banme 形似字符映射配置',
       usage: '显示当前配置的形似字符替换规则'
-    }).action(({ session }) => {
-      let similarChars = this.readData(this.similarCharsPath)
-      if (!similarChars || Object.keys(similarChars).length === 0) {
-        this.setDefaultSimilarChars()
-        return '没有找到 banme 形似字符映射，已设置默认映射喵~'
-      }
-      similarChars = this.readData(this.similarCharsPath)
-      const charList = Object.entries(similarChars).map(([char, replacement]) => `${char} -> ${replacement}`).join('\n')
-      return `当前的 banme 形似字符映射如下喵~\n${charList || '没有形似字符映射喵~'}`
     })
+      .alias("banme.similar")
+      .action(({ session }) => {
+        let similarChars = this.readData(this.similarCharsPath)
+        if (!similarChars || Object.keys(similarChars).length === 0) {
+          this.setDefaultSimilarChars()
+          return '没有找到 banme 形似字符映射，已设置默认映射喵~'
+        }
+        similarChars = this.readData(this.similarCharsPath)
+        const charList = Object.entries(similarChars).map(([char, replacement]) => `${char} -> ${replacement}`).join('\n')
+        return `当前的 banme 形似字符映射如下喵~\n${charList || '没有形似字符映射喵~'}`
+      })
 
     // 规范化命令测试
     this.registerCommand({
-      name: 'banme.normalize',
+      name: 'play.banme.normalize',
       desc: '规范化命令测试',
       args: '<command:string>',
       permDesc: '测试 banme 规范化功能',
       usage: '测试字符串规范化结果，用于调试形似字符',
-      examples: ['banme.normalize bаnmе']
-    }).action(({ session }, command) => {
-      if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
-      const normalizedCommand = this.normalizeCommand(this.normalizeCommand(command))
-      const response = `规范化后的命令：${normalizedCommand}\n长度：${normalizedCommand.length}\n字符列表：\n`
-      const charList = normalizedCommand.split('').map((char, index) => `${index + 1}. ${char.charCodeAt(0).toString(16)}`).join('\n')
-      return response + charList
+      examples: ['banme normalize bаnmе']
     })
+      .alias("banme.normalize")
+      .action(({ session }, command) => {
+        if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
+        const normalizedCommand = this.normalizeCommand(this.normalizeCommand(command))
+        const response = `规范化后的命令：${normalizedCommand}\n长度：${normalizedCommand.length}\n字符列表：\n`
+        const charList = normalizedCommand.split('').map((char, index) => `${index + 1}. ${char.charCodeAt(0).toString(16)}`).join('\n')
+        return response + charList
+      })
 
     // 通过引用消息逐字符添加形似字符替换
     this.registerCommand({
-      name: 'banme.record',
+      name: 'play.banme.record',
       desc: '记录形似字符映射',
       args: '<standardCommand:string>',
       permDesc: '通过引用消息逐字符添加形似字符替换',
       usage: '引用一条包含形似字符的消息，提供标准字符串进行映射'
-    }).action(async ({ session }, standardCommand) => {
-      if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
-      if (!session.quote) return '请引用一条消息来记录映射喵~'
-      if (standardCommand.length === 0) return '请提供标准命令字符串喵~'
-
-      const quotedMessage = session.quote.content
-      const normalizedCommand = this.normalizeCommand(this.normalizeCommand(quotedMessage))
-
-      if (normalizedCommand.length !== standardCommand.length) {
-        return '映射记录失败喵~\n' + '规范化字符串:' + normalizedCommand + '\n' + '对应的标准串:' + standardCommand + '\n' + '两者长度不一致喵~'
-      }
-
-      const similarChars = this.readData(this.similarCharsPath) || {}
-      for (let i = 0; i < normalizedCommand.length; i++) {
-        const originalChar = normalizedCommand[i]
-        const standardChar = standardCommand[i]
-        if (standardChar !== originalChar) {
-          similarChars[originalChar] = standardChar
-        }
-      }
-
-      this.saveData(this.similarCharsPath, similarChars)
-      this.log(session, 'banme.record', session.userId, '成功')
-      return '已记录形似字符映射喵~\n' + '规范化字符串：' + normalizedCommand + '\n' + '对应的标准串：' + standardCommand
     })
+      .alias("banme.record")
+      .alias("随机自我禁言记录")
+      .action(async ({ session }, standardCommand) => {
+        if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
+        if (!session.quote) return '请引用一条消息来记录映射喵~'
+        if (standardCommand.length === 0) return '请提供标准命令字符串喵~'
+
+        const quotedMessage = session.quote.content
+        const normalizedCommand = this.normalizeCommand(this.normalizeCommand(quotedMessage))
+
+        if (normalizedCommand.length !== standardCommand.length) {
+          return '映射记录失败喵~\n' + '规范化字符串:' + normalizedCommand + '\n' + '对应的标准串:' + standardCommand + '\n' + '两者长度不一致喵~'
+        }
+
+        const similarChars = this.readData(this.similarCharsPath) || {}
+        for (let i = 0; i < normalizedCommand.length; i++) {
+          const originalChar = normalizedCommand[i]
+          const standardChar = standardCommand[i]
+          if (standardChar !== originalChar) {
+            similarChars[originalChar] = standardChar
+          }
+        }
+
+        this.saveData(this.similarCharsPath, similarChars)
+        this.log(session, 'banme.record', session.userId, '成功')
+        return '已记录形似字符映射喵~\n' + '规范化字符串：' + normalizedCommand + '\n' + '对应的标准串：' + standardCommand
+      })
 
     // 通过引用消息添加字符串映射
     this.registerCommand({
-      name: 'banme.alias',
+      name: 'play.banme.alias',
       desc: '记录字符串别名',
       args: '<standardCommand:string>',
       permDesc: '通过引用消息添加字符串映射',
       usage: '引用一条消息，将其整体映射为标准字符串'
-    }).action(async ({ session }, standardCommand) => {
-      if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
-      if (!session.quote) return '请引用一条消息来记录映射喵~'
-      if (standardCommand.length === 0) return '请提供一个标准字符串喵~'
-
-      const quotedMessage = session.quote.content
-      const similarChars = this.readData(this.similarCharsPath) || {}
-      similarChars[quotedMessage] = standardCommand
-
-      this.saveData(this.similarCharsPath, similarChars)
-      this.log(session, 'banme.alias', session.userId, '成功')
-      return '已记录字符串映射喵~\n' + '原字符串：' + quotedMessage + '\n' + '对应的标准串：' + standardCommand
     })
+      .alias("banme.alias")
+      .action(async ({ session }, standardCommand) => {
+        if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
+        if (!session.quote) return '请引用一条消息来记录映射喵~'
+        if (standardCommand.length === 0) return '请提供一个标准字符串喵~'
+
+        const quotedMessage = session.quote.content
+        const similarChars = this.readData(this.similarCharsPath) || {}
+        similarChars[quotedMessage] = standardCommand
+
+        this.saveData(this.similarCharsPath, similarChars)
+        this.log(session, 'banme.alias', session.userId, '成功')
+        return '已记录字符串映射喵~\n' + '原字符串：' + quotedMessage + '\n' + '对应的标准串：' + standardCommand
+      })
 
     // banme 配置命令
     this.registerCommand({
-      name: 'banme.config',
+      name: 'play.banme.config',
       desc: '设置banme配置',
       permDesc: '修改 banme 功能配置',
       usage: '配置本群的 banme 参数，包括启用、时长、概率等'
     })
+      .alias("banme.config")
+      .alias("随机自我禁言配置")
       .option('enabled', '--enabled <enabled:boolean> 是否启用')
       .option('baseMin', '--baseMin <seconds:number> 最小禁言时间(秒)')
       .option('baseMax', '--baseMax <minutes:number> 最大禁言时间(分)')

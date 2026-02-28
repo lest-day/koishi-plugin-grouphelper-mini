@@ -27,9 +27,9 @@ export class HelpModule extends BaseModule {
   private registerCommands(): void {
     // 主帮助命令
     this.registerCommand({
-      name: 'grouphelper',
+      name: 'grouphelper.help',
       desc: '群管理帮助',
-      permNode: 'grouphelper',
+      permNode: 'grouphelper.help',
       permDesc: '查看帮助信息',
       skipAuth: true
     })
@@ -47,10 +47,10 @@ export class HelpModule extends BaseModule {
 
     // 时间解析测试命令
     this.registerCommand({
-      name: 'parse-time',
+      name: 'grouphelper.parse-time',
       desc: '测试时间解析',
       args: '<expression:text>',
-      permNode: 'parse-time',
+      permNode: 'grouphelper.parse-time',
       permDesc: '测试时间解析',
       skipAuth: true
     })

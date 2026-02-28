@@ -30,9 +30,9 @@ export class KeywordModule extends BaseModule {
    */
   private registerVerifyCommand(): void {
     this.registerCommand({
-      name: 'verify',
+      name: 'manage.keyword.verify',
       desc: '入群验证关键词管理',
-      permNode: 'verify',
+      permNode: 'manage.keyword.verify',
       permDesc: '管理入群验证关键词',
       usage: '-a 添加关键词，-r 移除，--clear 清空，-l 列出，-n 自动拒绝，-w 设置拒绝词'
     })
@@ -144,9 +144,9 @@ export class KeywordModule extends BaseModule {
    */
   private registerForbiddenCommand(): void {
     this.registerCommand({
-      name: 'forbidden',
+      name: 'manage.keyword.forbidden',
       desc: '禁言关键词管理',
-      permNode: 'forbidden',
+      permNode: 'manage.keyword.forbidden',
       permDesc: '管理禁言关键词',
       usage: '-a 添加关键词，-r 移除，--clear 清空，-l 列出，-d/-b/-k 开关，-t 禁言时长'
     })

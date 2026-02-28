@@ -39,9 +39,9 @@ export class WelcomeModule extends BaseModule {
    */
   private registerCommands(): void {
     this.registerCommand({
-      name: 'welcome',
+      name: 'manage.welbye.welcome',
       desc: '入群欢迎语管理',
-      permNode: 'welcome',
+      permNode: 'manage.welbye.welcome',
       permDesc: '管理入群欢迎语',
       usage: '-s 设置欢迎语，-r 移除，-t 测试，-l 设置等级限制，-j 设置退群冷却'
     })
@@ -55,9 +55,9 @@ export class WelcomeModule extends BaseModule {
       })
 
       this.registerCommand({
-      name: 'goodbye',
+      name: 'manage.welbye.goodbye',
       desc: '退群欢送语管理',
-      permNode: 'goodbye',
+      permNode: 'manage.welbye.goodbye',
       permDesc: '管理退群欢送语',
       usage: '-s 设置欢送语，-r 移除，-t 测试'
     })

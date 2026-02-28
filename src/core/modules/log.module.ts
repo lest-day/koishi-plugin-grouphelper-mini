@@ -97,7 +97,7 @@ export class LogModule extends BaseModule {
   private registerEventListeners(): void {
     // 命令执行前记录开始时间
     this.ctx.on('command/before-execute', (argv) => {
-      ;(argv as any)._startTime = Date.now()
+      ; (argv as any)._startTime = Date.now()
     })
 
     // 命令执行错误记录
@@ -108,19 +108,19 @@ export class LogModule extends BaseModule {
     // 中间件记录成功执行
     this.ctx.middleware(async (session, next) => {
       const result = await next()
-      
+
       if (session.argv && session.argv.command) {
         // 检查命令是否被标记为失败
         const commandFailed = (session as any)._commandFailed
         const commandError = (session as any)._commandError
-        
+
         if (commandFailed) {
           this.logCommandExecution(session.argv, false, commandError, result)
         } else {
           this.logCommandExecution(session.argv, true, undefined, result)
         }
       }
-      
+
       return result
     }, true)
   }
@@ -188,14 +188,15 @@ export class LogModule extends BaseModule {
   private registerOperationLogCommands(): void {
     // 显示操作日志
     this.registerCommand({
-      name: 'listlog',
+      name: 'manage.grouphelper.listlog',
       desc: '显示最近的操作记录',
       args: '[lines:number]',
       permNode: 'listlog',
       permDesc: '查看操作日志',
       usage: '显示最近的操作日志，可指定条数',
-      examples: ['listlog', 'listlog 50']
+      examples: ['grouphelper.listlog', 'listlog 50']
     })
+      .alias('listlog')
       .action(async ({ session }, lines = 100) => {
         if (!fs.existsSync(this.logPath)) {
           return '还没有任何日志记录喵~'
@@ -219,13 +220,14 @@ export class LogModule extends BaseModule {
 
     // 清理操作日志
     this.registerCommand({
-      name: 'clearlog',
+      name: 'manage.grouphelper.clearlog',
       desc: '清理日志文件',
       permNode: 'clearlog',
       permDesc: '清理操作日志',
       usage: '-d 天数 保留最近几天，-a 清理所有',
       examples: ['clearlog -d 7', 'clearlog -a']
     })
+      .alias('clearlog')
       .option('d', '-d <days:number> 保留最近几天的日志')
       .option('a', '-a 清理所有日志')
       .action(async ({ session, options }) => {
@@ -268,13 +270,14 @@ export class LogModule extends BaseModule {
   private registerCommandLogCommands(): void {
     // 查看命令日志
     this.registerCommand({
-      name: 'cmdlogs.check',
+      name: 'manage.grouphelper.cmdlogs.check',
       desc: '查看命令执行日志',
       permNode: 'cmdlogs-check',
       permDesc: '查看命令执行日志',
       usage: '查看命令执行记录，支持多种过滤选项',
       examples: ['cmdlogs.check -l 20', 'cmdlogs.check -u 123456 -f']
     })
+      .alias('cmdlogs.check')
       .alias('命令日志')
       .option('limit', '-l <number> 显示条数', { fallback: 10 })
       .option('user', '-u <userId> 筛选特定用户')
@@ -309,12 +312,13 @@ export class LogModule extends BaseModule {
 
     // 命令统计
     this.registerCommand({
-      name: 'cmdlogs.stats',
+      name: 'manage.grouphelper.cmdlogs.stats',
       desc: '查看命令使用统计',
       permNode: 'cmdlogs-stats',
       permDesc: '查看命令统计',
       usage: '统计命令使用情况，支持过滤和排序'
     })
+      .alias('cmdlogs.stats')
       .alias('命令统计')
       .option('limit', '-l <number> 显示前N个命令', { fallback: 10 })
       .option('command', '-c <command> 筛选特定命令')
@@ -343,12 +347,13 @@ export class LogModule extends BaseModule {
 
     // 清理命令日志
     this.registerCommand({
-      name: 'cmdlogs.clear',
+      name: 'manage.grouphelper.cmdlogs.clear',
       desc: '清除命令日志',
       permNode: 'cmdlogs-clear',
       permDesc: '清除命令日志',
       usage: '-d 天数 清除N天前，--all 清除所有'
     })
+      .alias('cmdlogs.clear')
       .alias('清理日志')
       .option('days', '-d <number> 清除N天前的日志', { fallback: 0 })
       .option('all', '--all 清除所有日志')
@@ -373,12 +378,13 @@ export class LogModule extends BaseModule {
 
     // 导出命令日志
     this.registerCommand({
-      name: 'cmdlogs.export',
+      name: 'manage.grouphelper.cmdlogs.export',
       desc: '导出命令日志',
       permNode: 'cmdlogs-export',
       permDesc: '导出命令日志',
       usage: '-d 天数 导出最近N天，-f json/csv 格式'
     })
+      .alias('cmdlogs.export')
       .alias('导出日志')
       .option('days', '-d <number> 导出最近N天的日志', { fallback: 7 })
       .option('format', '-f <format> 导出格式 (json|csv)', { fallback: 'json' })

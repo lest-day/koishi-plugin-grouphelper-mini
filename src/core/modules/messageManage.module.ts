@@ -31,12 +31,15 @@ export class MessageManageModule extends BaseModule {
    */
   private registerDelMsgCommand(): void {
     this.registerCommand({
-      name: 'delmsg',
+      name: 'manage.message.delmsg',
       desc: '撤回消息',
-      permNode: 'delmsg',
+      permNode: 'manage.message.delmsg',
       permDesc: '撤回群消息',
       usage: '回复要撤回的消息后使用此命令'
     })
+      .alias('delmsg')
+      .alias('撤回')
+      .alias('撤回消息')
       .action(async ({ session }) => {
         if (!session.quote) return '喵喵！请回复要撤回的消息呀~'
 
@@ -57,13 +60,15 @@ export class MessageManageModule extends BaseModule {
     const essenceConfig = this.config.setEssenceMsg || { enabled: false, authority: 3 }
     
     this.registerCommand({
-      name: 'essence',
+      name: 'manage.message.essence',
       desc: '精华消息管理',
       permNode: 'essence',
       permDesc: '管理精华消息',
       usage: '-s 设置精华消息，-r 取消精华消息',
       examples: ['essence -s (回复消息)', 'essence -r (回复消息)']
     })
+      .alias('essence')
+      .alias('精华消息管理')
       .option('s', '-s 设置精华消息')
       .option('r', '-r 取消精华消息')
       .action(async ({ session, options }) => {
