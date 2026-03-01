@@ -123,7 +123,7 @@ export class WarnModule extends BaseModule {
       name: 'manage.order.warn',
       desc: '警告用户',
       args: '<user:user> [count:number]',
-      permNode: 'add',
+      permNode: 'warn-add',
       permDesc: '添加警告记录',
       usage: '警告用户，达到阈值后自动禁言',
       examples: ['warn @用户', 'warn @用户 3']
@@ -136,10 +136,10 @@ export class WarnModule extends BaseModule {
 
     // warn.clear 命令 - 清除用户警告
     this.registerCommand({
-      name: 'manage.order.warn.clear',
+      name: 'manage.order.warn-clear',
       desc: '清除用户警告',
       args: '<user:user>',
-      permNode: 'clear',
+      permNode: 'warn-clear',
       permDesc: '清除用户的警告记录',
       examples: ['warn.clear @用户']
     })
@@ -151,10 +151,10 @@ export class WarnModule extends BaseModule {
 
     // warn.list 命令 - 查看警告列表
     this.registerCommand({
-      name: 'manage.order.warn.list',
+      name: 'manage.order.warn-list',
       desc: '查看警告列表',
       args: '[user:user]',
-      permNode: 'list',
+      permNode: 'warn-list',
       permDesc: '查看警告记录列表',
       usage: '不指定用户则显示本群所有警告',
       examples: ['warn.list', 'warn.list @用户']
