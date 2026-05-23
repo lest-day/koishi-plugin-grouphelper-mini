@@ -16,7 +16,8 @@
     "types": [
       "node",
       "yml-register/types"
-    ]
+    ],
+    "skipLibCheck": true
   },
   "include": [
     "src"
