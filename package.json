@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-grouphelper-mini",
   "description": "\u5e26\u6709webui\u7684\u529f\u80fd\u5168\u9762\u7684\u7fa4\u7ba1\u63d2\u4ef6",
-  "version": "0.3.12",
+  "version": "0.0.7",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "exports": {
