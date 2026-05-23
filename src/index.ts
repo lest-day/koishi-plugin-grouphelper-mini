@@ -111,6 +111,7 @@ export function apply(ctx: Context) {
       ctx.command("manage.keyword", "关键词管理")
       ctx.command("manage.antirecall", "防撤回功能管理")
       ctx.command("manage.grouphelper", "GroupHelper系统")
+      ctx.command("manage.grouphelper.cmdlogs", "日志文件管理")
 
       // 初始化所有模块
       await ctx.groupHelper.initModules()
