@@ -17,7 +17,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/camvanaa/koishi-plugin-grouphelper.git"
+    "url": "git+https://github.com/lest-day/koishi-plugin-grouphelper-mini.git"
   },
   "files": [
     "lib",
