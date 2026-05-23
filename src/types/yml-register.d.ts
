@@ -1,8 +1,0 @@
-declare module 'yml-register' {
-  const value: any;
-  export default value;
-}
-
-declare module 'yml-register/types' {
-  export * from 'yml-register';
-}
