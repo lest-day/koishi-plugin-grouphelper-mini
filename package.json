@@ -27,6 +27,7 @@
     "license": "MIT",
     "scripts": {
       "build": "build.cmd",
+      "login": "npm login --registry=https://registry.npmjs.org",
       "publish": "npm publish --registry=https://registry.npmjs.org --workspaces=false"
     },
     "keywords": [
