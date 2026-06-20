@@ -102,6 +102,7 @@ export function apply(ctx: Context) {
       //类别名称注册
       ctx.command("smart", "AI智能功能")
       ctx.command("play", "娱乐类功能")
+      ctx.command("play.wife", "随机抽娶群友老婆")
       ctx.command("manage", "管理类功能")
       ctx.command("manage.welbye", "加退群提醒")
       ctx.command("manage.role", "角色功能管理")
