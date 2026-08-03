@@ -33,13 +33,14 @@ export class MessageManageModule extends BaseModule {
     this.registerCommand({
       name: 'manage.message.delmsg',
       desc: '撤回消息',
-      permNode: 'manage.message.delmsg',
+      permNode: 'delmsg',
       permDesc: '撤回群消息',
       usage: '回复要撤回的消息后使用此命令'
     })
       .alias('delmsg')
-      .alias('撤回')
+      .alias('删除消息')
       .alias('撤回消息')
+      .alias('撤回')
       .action(async ({ session }) => {
         if (!session.quote) return '喵喵！请回复要撤回的消息呀~'
 

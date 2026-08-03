@@ -41,7 +41,7 @@ export class ConfigModule extends BaseModule {
       permDesc: '配置管理主命令',
       usage: '-t 显示配置，-b 黑名单管理，-w 警告管理'
     })
-      .alias('config')
+      .alias('grouphelper-config')
       .option('t', '-t 显示所有记录')
       .option('b', '-b 黑名单管理')
       .option('w', '-w 警告管理')

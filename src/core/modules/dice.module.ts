@@ -27,7 +27,7 @@ export class DiceModule extends BaseModule {
     this.registerCommand({
       name: 'play.dice-config',
       desc: '掷骰子功能开关',
-      permNode: 'dice-config',
+      permNode: 'play.dice-config',
       permDesc: '配置掷骰子功能',
       usage: '-e true/false 启用禁用，-l 数字 设置结果长度限制',
       examples: ['dice-config -e true', 'dice-config -l 500']
@@ -78,7 +78,7 @@ export class DiceModule extends BaseModule {
       name: 'play.dice',
       desc: '掷骰子',
       args: '<sides:string> [count:string]',
-      permNode: 'dice',
+      permNode: 'play.dice',
       permDesc: '使用掷骰子功能',
       skipAuth: true,  // 掷骰子是普通功能，不需要权限
       usage: '掷指定面数的骰子，支持 XdY 语法',
@@ -105,7 +105,9 @@ export class DiceModule extends BaseModule {
           return '喵呜...请指定骰子面数喵~'
         }
 
-        if (sides < 2 || count < 1) {
+        // 必须显式判 NaN：非法个数下 `NaN < 1` 为 false，会一路漏过校验，
+        // 最后 rollDice(sides, NaN) 返回空数组、输出"总和：0"
+        if (Number.isNaN(sides) || Number.isNaN(count) || sides < 2 || count < 1) {
           return '喵呜...骰子面数至少为2，个数至少为1喵~'
         }
 

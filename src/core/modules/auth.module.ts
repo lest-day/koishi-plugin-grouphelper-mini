@@ -1,7 +1,7 @@
 import { Context, Logger } from 'koishi'
 import { BaseModule, ModuleMeta } from './base.module'
 import { DataManager } from '../data'
-import { Config } from '../../types'
+import { AuthScope, Config } from '../../types'
 import { BUILTIN_ROLE_IDS } from '../services/auth.service'
 
 const logger = new Logger('grouphelper:auth')
@@ -17,22 +17,6 @@ export class AuthModule extends BaseModule {
 
   protected async onInit(): Promise<void> {
     this.registerCommands()
-  }
-
-  /**
-   * 解析用户 ID（支持 @at 和纯数字）
-   */
-  private parseUserId(target: string): string | null {
-    if (!target) return null
-    try {
-      if (target.startsWith('<at')) {
-        const match = target.match(/id="(\d+)"/)
-        if (match) return match[1]
-      }
-      return target.replace(/^@/, '').trim() || null
-    } catch (e) {
-      return target.replace(/^@/, '').trim() || null
-    }
   }
 
   /**
@@ -77,6 +61,60 @@ export class AuthModule extends BaseModule {
     return { role: null }
   }
 
+  private parseIdList(value?: string): string[] {
+    if (!value) return []
+    return value
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean)
+  }
+
+  private resolveAssignScope(session: any, options: any): { scope?: AuthScope, error?: string } {
+    const auth = this.ctx.groupHelper.auth
+    const allowed = auth.getPermissionScopes(session, 'gauth.add')
+    if (!allowed.length) {
+      return { error: '你没有可用的角色分配范围' }
+    }
+
+    const scopeType = options?.scopeType || (options?.guilds ? 'guilds' : options?.groups ? 'guildGroup' : '')
+    let requested: AuthScope | undefined
+
+    if (scopeType) {
+      if (scopeType === 'global') {
+        requested = { type: 'global' }
+      } else if (scopeType === 'guilds') {
+        const guildIds = this.parseIdList(options?.guilds)
+        const finalGuildIds = guildIds.length ? guildIds : (session.guildId ? [session.guildId] : [])
+        if (!finalGuildIds.length) {
+          return { error: '请指定群聊 ID，或在群聊内执行该命令' }
+        }
+        requested = { type: 'guilds', guildIds: finalGuildIds }
+      } else if (scopeType === 'guildGroup') {
+        const groupIds = this.parseIdList(options?.groups)
+        if (!groupIds.length) {
+          return { error: '请指定群组组 ID' }
+        }
+        requested = { type: 'guildGroup', guildGroupIds: groupIds }
+      } else {
+        return { error: '无效的范围类型，可选: global | guilds | guildGroup' }
+      }
+    }
+
+    if (!requested) {
+      const fallback = auth.getDefaultScopeForPermission(session, 'gauth.add')
+      if (!fallback) {
+        return { error: '当前授权范围有多个分支，请显式指定范围' }
+      }
+      requested = fallback
+    }
+
+    if (!auth.isScopeAllowed(allowed, requested)) {
+      return { error: '指定范围超出你的授权范围' }
+    }
+
+    return { scope: requested }
+  }
+
   /**
    * 注册命令
    */
@@ -85,7 +123,7 @@ export class AuthModule extends BaseModule {
     this.registerCommand({
       name: 'manage.role.gauth',
       desc: '管理用户角色',
-      permNode: 'manage.role.gauth',
+      permNode: 'gauth',
       permDesc: '管理用户角色（主命令）',
       usage: '角色管理系统，使用子命令操作'
     })
@@ -94,7 +132,7 @@ export class AuthModule extends BaseModule {
     this.registerCommand({
       name: 'manage.role.gauth.list',
       desc: '列出所有可用角色',
-      permNode: 'manage.role.gauth.list',
+      permNode: 'gauth.list',
       permDesc: '列出所有可用角色',
       usage: '显示系统中所有可分配的角色'
     })
@@ -122,15 +160,15 @@ export class AuthModule extends BaseModule {
       name: 'manage.role.gauth.info',
       desc: '查看用户的角色',
       args: '<target:user>',
-      permNode: 'manage.role.gauth.info',
+      permNode: 'gauth.info',
       permDesc: '查看用户的角色',
       usage: '查看指定用户所拥有的角色',
       examples: ['gauth.info @用户']
     })
       .alias('gauth-info')
       .alias('查看角色')
-      .example('gauth-info @可爱猫娘')
-      .example('gauth-info 123456')
+      .example('gauth.info @可爱猫娘')
+      .example('gauth.info 123456')
       .action(async ({ session }, target) => {
         if (!target) return '请指定要查询的用户'
 
@@ -161,17 +199,20 @@ export class AuthModule extends BaseModule {
       name: 'manage.role.gauth.add',
       desc: '给用户添加角色',
       args: '<target:user> <roleIdentifier:text>',
-      permNode: 'manage.role.gauth.add',
+      permNode: 'gauth.add',
       permDesc: '给用户添加角色',
       usage: '给指定用户分配角色',
       examples: ['gauth.add @用户 admin']
     })
       .alias('gauth-add')
       .alias('添加角色')
-      .example('gauth-add @可爱猫娘 admin')
-      .example('gauth-add @可爱猫娘 管理员')
-      .example('gauth-add 123456 moderator')
-      .action(async ({ session }, target, roleIdentifier) => {
+      .example('gauth.add @可爱猫娘 admin')
+      .example('gauth.add @可爱猫娘 管理员')
+      .example('gauth.add 123456 moderator')
+      .option('scopeType', '-st <type:string> 范围类型(global|guilds|guildGroup)')
+      .option('guilds', '-g <ids:string> 指定群聊ID，逗号分隔')
+      .option('groups', '-gg <ids:string> 指定群组组ID，逗号分隔')
+      .action(async ({ session, options }, target, roleIdentifier) => {
         if (!target) return '请指定要操作的用户'
         if (!roleIdentifier) return '请指定要添加的角色 ID 或名称'
 
@@ -192,8 +233,11 @@ export class AuthModule extends BaseModule {
           return `"${role.name}" 是内置角色，由系统自动分配，不支持手动添加`
         }
 
+        const { scope, error } = this.resolveAssignScope(session, options)
+        if (error) return error
+
         try {
-          await this.ctx.groupHelper.auth.assignRole(userId, role.id)
+          await this.ctx.groupHelper.auth.assignRole(userId, role.id, scope, session.userId)
           const msg = `已将用户 ${userId} 添加到角色 "${role.name}"`
           return warning ? `${msg}\n⚠️ ${warning}` : msg
         } catch (e) {
@@ -206,7 +250,7 @@ export class AuthModule extends BaseModule {
       name: 'manage.role.gauth.remove',
       desc: '从用户移除角色',
       args: '<target:user> <roleIdentifier:text>',
-      permNode: 'manage.role.gauth.remove',
+      permNode: 'gauth.remove',
       permDesc: '从用户移除角色',
       usage: '从指定用户撤销角色',
       examples: ['gauth.remove @用户 admin']
@@ -214,9 +258,9 @@ export class AuthModule extends BaseModule {
       .alias('gauth-remove')
       .alias('gauth-rm')
       .alias('移除角色')
-      .example('gauth-remove @可爱猫娘 admin')
-      .example('gauth-remove @可爱猫娘 管理员')
-      .example('gauth-rm 123456 moderator')
+      .example('gauth.remove @可爱猫娘 admin')
+      .example('gauth.remove @可爱猫娘 管理员')
+      .example('gauth.rm 123456 moderator')
       .action(async ({ session }, target, roleIdentifier) => {
         if (!target) return '请指定要操作的用户'
         if (!roleIdentifier) return '请指定要移除的角色 ID 或名称'

@@ -68,19 +68,8 @@ export class MemberManageModule extends BaseModule {
 
         const [target, groupId] = args
 
-        let userId: string
-        try {
-          if (target?.startsWith('<at')) {
-            const match = target.match(/id="(\d+)"/)
-            if (match) {
-              userId = match[1]
-            }
-          } else {
-            userId = parseUserId(target)
-          }
-        } catch (e) {
-          userId = parseUserId(target)
-        }
+        // parseUserId 已统一处理 <at>、platform:id、@123 与裸 ID 四种形式
+        const userId = parseUserId(target)
 
         if (!userId) {
           this.logCommand(session, 'kick', 'none', '失败：无法读取目标用户', false)
@@ -88,6 +77,13 @@ export class MemberManageModule extends BaseModule {
         }
 
         const targetGroup = groupId || session.guildId
+
+        // 允许显式指定群号，因此必须校验作用域，不能只靠当前会话群的权限判断
+        const scopeError = this.checkGuildScope(session, 'kick', targetGroup)
+        if (scopeError) {
+          this.logCommand(session, 'kick', userId, `失败：越权操作群 ${targetGroup}`, false)
+          return scopeError
+        }
 
         try {
           await session.bot.kickGuildMember(targetGroup, userId, hasBlackOption)
@@ -118,17 +114,19 @@ export class MemberManageModule extends BaseModule {
       name: 'manage.member.admin',
       desc: '设置管理员',
       args: '<user:user>',
-      permNode: 'manage.member.admin',
+      permNode: 'admin',
       permDesc: '设置群管理员',
       examples: ['admin @用户']
     })
       .alias('admin')
       .alias('设为管理')
+      .alias('设管')
+      .alias('上管')
       .example('admin @用户')
       .action(async ({ session }, user) => {
         if (!user) return '请指定用户'
 
-        const userId = String(user).split(':')[1]
+        const userId = parseUserId(user)
         try {
           await session.bot.internal?.setGroupAdmin(session.guildId, userId, true)
           this.logCommand(session, 'admin', userId, '成功：已设置为管理员')
@@ -153,7 +151,7 @@ export class MemberManageModule extends BaseModule {
       .action(async ({ session }, user) => {
         if (!user) return '请指定用户'
 
-        const userId = String(user).split(':')[1]
+        const userId = parseUserId(user)
         try {
           await session.bot.internal?.setGroupAdmin(session.guildId, userId, false)
           this.logCommand(session, 'unadmin', userId, '成功：已取消管理员')
@@ -171,11 +169,11 @@ export class MemberManageModule extends BaseModule {
    */
   private registerTitleCommand(): void {
     const titleConfig = this.config.setTitle || { enabled: false, authority: 3, maxLength: 18 }
-    
+
     this.registerCommand({
       name: 'manage.member.title',
       desc: '群头衔管理',
-      permNode: 'manage.member.title',
+      permNode: 'title',
       permDesc: '设置群头衔',
       usage: '-s <文本> 设置头衔，-r 移除头衔，-u @用户 指定用户',
       examples: ['title -s 大佬', 'title -r', 'title -s 萌新 -u @用户']
@@ -191,7 +189,7 @@ export class MemberManageModule extends BaseModule {
 
         let targetId = session.userId
         if (options.u) {
-          targetId = String(options.u).split(':')[1]
+          targetId = parseUserId(options.u)
         }
 
         try {
@@ -221,14 +219,16 @@ export class MemberManageModule extends BaseModule {
    */
   private registerUnbanAllPplCommand(): void {
     this.registerCommand({
-      name: 'manage.member.unban-allppl',
+      name: 'manage.order.unban-allppl',
       desc: '解除所有人禁言',
-      permNode: 'manage.member.unban-allppl',
+      permNode: 'unban-allppl',
       permDesc: '批量解除所有禁言',
       usage: '解除当前群所有被禁言成员的禁言状态'
     })
       .alias('unban-allppl')
       .alias('解除所有禁言')
+      .alias('禁言全解')
+      .alias('全解')
       .action(async ({ session }) => {
         if (!session.guildId) return '喵呜...这个命令只能在群里用喵~'
 
@@ -277,5 +277,5 @@ export class MemberManageModule extends BaseModule {
   /**
    * 记录命令执行日志
    */
-  
+
 }

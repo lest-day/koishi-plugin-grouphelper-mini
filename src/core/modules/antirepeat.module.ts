@@ -16,7 +16,7 @@ export class AntirepeatModule extends BaseModule {
   }
 
   protected async onInit(): Promise<void> {
-     this.registerAntiRepeatCommand()
+    this.registerAntiRepeatCommand()
   }
 
   /**
@@ -54,7 +54,7 @@ antirepeat 0 - 关闭复读检测`
         }
 
         if (threshold === 0) {
-          ;(groupConfig as any).antiRepeat = { enabled: false, threshold: antiRepeatConfig.threshold }
+          ; (groupConfig as any).antiRepeat = { enabled: false, threshold: antiRepeatConfig.threshold }
           groupConfigs[session.guildId] = groupConfig
           this.data.groupConfig.setAll(groupConfigs)
           this.logCommand(session, 'antirepeat', session.guildId, '成功：已关闭复读检测')
@@ -66,7 +66,7 @@ antirepeat 0 - 关闭复读检测`
           return '喵呜...阈值至少要设置为3条以上喵...'
         }
 
-        ;(groupConfig as any).antiRepeat = { enabled: true, threshold: threshold }
+        ; (groupConfig as any).antiRepeat = { enabled: true, threshold: threshold }
         groupConfigs[session.guildId] = groupConfig
         this.data.groupConfig.setAll(groupConfigs)
         this.logCommand(session, 'antirepeat', session.guildId, `成功：已设置阈值为 ${threshold} 并启用`)

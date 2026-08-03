@@ -1,7 +1,7 @@
 import { Context, Session } from 'koishi'
 import { BaseModule, ModuleMeta } from './base.module'
 import { DataManager } from '../data'
-import { parseTimeString, formatDuration } from '../../utils'
+import { parseTimeString, formatDuration, parseBoolOption } from '../../utils'
 
 /**
  * 自助禁言模块
@@ -14,8 +14,20 @@ export class BanmeModule extends BaseModule {
     version: '1.0.0'
   }
 
-  /** 形似字符映射表路径 */
-  private readonly similarCharsPath = './data/similarChars.json'
+  /** 形似字符映射表路径（放在插件数据目录内，不受进程工作目录影响） */
+  private readonly similarCharsPath: string
+
+  /**
+   * 映射表内存缓存。
+   * normalizeCommand 会对每条群消息调用两次，每次都同步读盘的话
+   * 高流量群里就是持续的阻塞式 IO。
+   */
+  private similarCharsCache: Record<string, string> | null = null
+
+  constructor(ctx: Context, dataManager: DataManager, config: any) {
+    super(ctx, dataManager, config)
+    this.similarCharsPath = require('path').resolve(this.data.dataPath, 'similarChars.json')
+  }
 
   protected async onInit(): Promise<void> {
     this.ensureSimilarChars()
@@ -57,9 +69,18 @@ export class BanmeModule extends BaseModule {
     this.saveData(this.similarCharsPath, defaultSimilarChars)
   }
 
-  /**
-   * 读取数据文件
-   */
+  /** 读取形似字符映射表（带内存缓存） */
+  private getSimilarChars(): Record<string, string> {
+    if (this.similarCharsCache) return this.similarCharsCache
+    const loaded = this.readData(this.similarCharsPath)
+    if (!loaded || Object.keys(loaded).length === 0) {
+      this.setDefaultSimilarChars()
+      return this.similarCharsCache || {}
+    }
+    this.similarCharsCache = loaded
+    return loaded
+  }
+
   private readData(path: string): any {
     try {
       const fs = require('fs')
@@ -79,6 +100,7 @@ export class BanmeModule extends BaseModule {
     try {
       const fs = require('fs')
       fs.writeFileSync(path, JSON.stringify(data, null, 2), 'utf-8')
+      if (path === this.similarCharsPath) this.similarCharsCache = data
     } catch (e) {
       this.ctx.logger.error(`[BanmeModule] 保存文件失败: ${path}`, e)
     }
@@ -103,16 +125,13 @@ export class BanmeModule extends BaseModule {
     // 移除所有组合字符
     command = command.replace(/[\u0300-\u036F\u1AB0-\u1AFF\u20D0-\u20FF]/g, '')
 
-    let similarChars = this.readData(this.similarCharsPath)
-    if (!similarChars || Object.keys(similarChars).length === 0) {
-      this.setDefaultSimilarChars()
-      similarChars = this.readData(this.similarCharsPath)
-    }
+    const similarChars = this.getSimilarChars()
 
     // 遍历映射表，匹配并替换字符
+    // 用字面量替换而非 new RegExp(char)：映射表的键可由 banme.alias 从任意消息内容写入，
+    // 一个 "(" 就会让这里对每条消息抛 SyntaxError，直接打断整条消息中间件链。
     for (const [char, replacement] of Object.entries(similarChars)) {
-      const regex = new RegExp(char, 'g')
-      command = command.replace(regex, replacement as string)
+      command = command.split(char).join(replacement as string)
     }
 
     // 移除所有标点符号
@@ -285,14 +304,14 @@ export class BanmeModule extends BaseModule {
       skipAuth: true, // 所有人都能使用
       usage: '随机抽取禁言时长，支持抽卡保底系统'
     })
-    .alias("banme")
-    .alias("随机自我禁言")
-    .alias("随机禁言自己")
-    .action(async ({ session }) => {
-      if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
-      if (session.quote) return '喵喵？回复消息时不能使用这个命令哦~'
-      return this.executeBanme(session)
-    })
+      .alias("banme")
+      .alias("随机自我禁言")
+      .alias("随机禁言自己")
+      .action(async ({ session }) => {
+        if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
+        if (session.quote) return '喵喵？回复消息时不能使用这个命令哦~'
+        return this.executeBanme(session)
+      })
 
     // 输出形似字符映射表
     this.registerCommand({
@@ -301,14 +320,12 @@ export class BanmeModule extends BaseModule {
       permDesc: '查看 banme 形似字符映射配置',
       usage: '显示当前配置的形似字符替换规则'
     })
-      .alias("banme.similar")
+      .alias("banme-similar")
       .action(({ session }) => {
-        let similarChars = this.readData(this.similarCharsPath)
-        if (!similarChars || Object.keys(similarChars).length === 0) {
-          this.setDefaultSimilarChars()
-          return '没有找到 banme 形似字符映射，已设置默认映射喵~'
+        const similarChars = this.getSimilarChars()
+        if (Object.keys(similarChars).length === 0) {
+          return '没有找到 banme 形似字符映射喵~'
         }
-        similarChars = this.readData(this.similarCharsPath)
         const charList = Object.entries(similarChars).map(([char, replacement]) => `${char} -> ${replacement}`).join('\n')
         return `当前的 banme 形似字符映射如下喵~\n${charList || '没有形似字符映射喵~'}`
       })
@@ -320,9 +337,9 @@ export class BanmeModule extends BaseModule {
       args: '<command:string>',
       permDesc: '测试 banme 规范化功能',
       usage: '测试字符串规范化结果，用于调试形似字符',
-      examples: ['banme normalize bаnmе']
+      examples: ['banme.normalize bаnmе']
     })
-      .alias("banme.normalize")
+      .alias("banme-normalize")
       .action(({ session }, command) => {
         if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
         const normalizedCommand = this.normalizeCommand(this.normalizeCommand(command))
@@ -339,7 +356,7 @@ export class BanmeModule extends BaseModule {
       permDesc: '通过引用消息逐字符添加形似字符替换',
       usage: '引用一条包含形似字符的消息，提供标准字符串进行映射'
     })
-      .alias("banme.record")
+      .alias("banme-record")
       .alias("随机自我禁言记录")
       .action(async ({ session }, standardCommand) => {
         if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
@@ -353,7 +370,7 @@ export class BanmeModule extends BaseModule {
           return '映射记录失败喵~\n' + '规范化字符串:' + normalizedCommand + '\n' + '对应的标准串:' + standardCommand + '\n' + '两者长度不一致喵~'
         }
 
-        const similarChars = this.readData(this.similarCharsPath) || {}
+        const similarChars = this.getSimilarChars()
         for (let i = 0; i < normalizedCommand.length; i++) {
           const originalChar = normalizedCommand[i]
           const standardChar = standardCommand[i]
@@ -375,14 +392,14 @@ export class BanmeModule extends BaseModule {
       permDesc: '通过引用消息添加字符串映射',
       usage: '引用一条消息，将其整体映射为标准字符串'
     })
-      .alias("banme.alias")
+      .alias("banme-alias")
       .action(async ({ session }, standardCommand) => {
         if (!session.guildId) return '喵呜...这个命令只能在群里用喵...'
         if (!session.quote) return '请引用一条消息来记录映射喵~'
         if (standardCommand.length === 0) return '请提供一个标准字符串喵~'
 
         const quotedMessage = session.quote.content
-        const similarChars = this.readData(this.similarCharsPath) || {}
+        const similarChars = this.getSimilarChars()
         similarChars[quotedMessage] = standardCommand
 
         this.saveData(this.similarCharsPath, similarChars)
@@ -397,7 +414,7 @@ export class BanmeModule extends BaseModule {
       permDesc: '修改 banme 功能配置',
       usage: '配置本群的 banme 参数，包括启用、时长、概率等'
     })
-      .alias("banme.config")
+      .alias("banme-config")
       .alias("随机自我禁言配置")
       .option('enabled', '--enabled <enabled:boolean> 是否启用')
       .option('baseMin', '--baseMin <seconds:number> 最小禁言时间(秒)')
@@ -427,10 +444,9 @@ export class BanmeModule extends BaseModule {
 
         if (options.enabled !== undefined) {
           const enabled = options.enabled.toString().toLowerCase()
-          if (['true', '1', 'yes', 'y', 'on'].includes(enabled)) {
-            banmeConfig.enabled = true
-          } else if (['false', '0', 'no', 'n', 'off'].includes(enabled)) {
-            banmeConfig.enabled = false
+          const parsed_enabled = parseBoolOption(enabled)
+          if (parsed_enabled !== null) {
+            banmeConfig.enabled = parsed_enabled
           } else {
             this.log(session, 'banme.config', session.userId, '失败：启用选项无效')
             return '启用选项无效，请输入 true/false'
@@ -446,10 +462,9 @@ export class BanmeModule extends BaseModule {
         if (options.losetime) banmeConfig.jackpot.loseDuration = options.losetime
         if (options.autoBan !== undefined) {
           const autoBan = options.autoBan.toString().toLowerCase()
-          if (['true', '1', 'yes', 'y', 'on'].includes(autoBan)) {
-            banmeConfig.autoBan = true
-          } else if (['false', '0', 'no', 'n', 'off'].includes(autoBan)) {
-            banmeConfig.autoBan = false
+          const parsed_autoBan = parseBoolOption(autoBan)
+          if (parsed_autoBan !== null) {
+            banmeConfig.autoBan = parsed_autoBan
           } else {
             this.log(session, 'banme.config', session.userId, '失败：自动禁言选项无效')
             return '自动禁言选项无效，请输入 true/false'

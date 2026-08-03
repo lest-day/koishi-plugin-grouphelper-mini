@@ -41,7 +41,7 @@ export class OrderManageModule extends BaseModule {
       name: 'manage.order.ban',
       desc: '禁言用户',
       args: '<input:text>',
-      permNode: 'manage.order.ban',
+      permNode: 'ban',
       permDesc: '禁言群成员',
       usage: '格式：ban <用户> <时长> [群号]',
       examples: ['ban @用户 1h', 'ban 123456789 30min']
@@ -109,10 +109,16 @@ export class OrderManageModule extends BaseModule {
 
         const targetGroup = groupId || session.guildId
 
+        const scopeError = this.checkGuildScope(session, 'ban', targetGroup)
+        if (scopeError) {
+          this.logCommand(session, 'ban', userId, `失败：越权操作群 ${targetGroup}`, false)
+          return scopeError
+        }
+
         try {
           const milliseconds = parseTimeString(duration)
           await session.bot.muteGuildMember(targetGroup, userId, milliseconds)
-          this.recordMute(targetGroup, userId, milliseconds)
+          this.data.recordMute(targetGroup, userId, milliseconds)
 
           const timeStr = formatDuration(milliseconds)
           this.logCommand(session, 'ban', userId, `成功：已禁言 ${timeStr}，群号：${targetGroup}`)
@@ -132,17 +138,16 @@ export class OrderManageModule extends BaseModule {
       name: 'manage.order.stop',
       desc: '短期禁言',
       args: '<user:user>',
-      permNode: 'manage.order.stop',
+      permNode: 'stop',
       permDesc: '短期禁言（10分钟）',
       usage: '固定10分钟的短期禁言',
       examples: ['stop @用户']
     })
       .alias('stop')
-      .alias('停')
       .alias('短期禁言')
       .action(async ({ session }, user) => {
         if (!user) return '请指定用户'
-        const userId = String(user).split(':')[1]
+        const userId = parseUserId(user)
 
         const mutes = this.data.mutes.getAll()
         const guildMutes = mutes[session.guildId] || {}
@@ -155,7 +160,7 @@ export class OrderManageModule extends BaseModule {
 
         try {
           await session.bot.muteGuildMember(session.guildId, userId, 600000)
-          this.recordMute(session.guildId, userId, 600000)
+          this.data.recordMute(session.guildId, userId, 600000)
           this.logCommand(session, 'stop', userId, `成功：已短期禁言，群号 ${session.guildId}`)
           return `已将 ${userId} 短期禁言啦喵~`
         } catch (e) {
@@ -173,14 +178,15 @@ export class OrderManageModule extends BaseModule {
       name: 'manage.order.unban',
       desc: '解除用户禁言',
       args: '<input:text>',
-      permNode: 'manage.order.unban',
+      permNode: 'unban',
       permDesc: '解除禁言',
       usage: '格式：unban <用户> [群号]',
       examples: ['unban @用户', 'unban 123456789']
     })
       .alias('unban')
-      .alias('取消禁言')
       .alias('解除禁言')
+      .alias('取消禁言')
+      .alias('解禁')
       .alias('解禁')
       .alias('取禁')
       .example('unban @用户')
@@ -224,9 +230,15 @@ export class OrderManageModule extends BaseModule {
 
         const targetGroup = groupId || session.guildId
 
+        const scopeError = this.checkGuildScope(session, 'unban', targetGroup)
+        if (scopeError) {
+          this.logCommand(session, 'unban', userId, `失败：越权操作群 ${targetGroup}`, false)
+          return scopeError
+        }
+
         try {
           await session.bot.muteGuildMember(targetGroup, userId, 0)
-          this.recordMute(targetGroup, userId, 0)
+          this.data.recordMute(targetGroup, userId, 0)
           this.logCommand(session, 'unban', userId, `成功：已解除禁言，群号 ${targetGroup}`)
           return `已经把 ${userId} 的禁言解除啦喵！开心~`
         } catch (e) {
@@ -243,7 +255,7 @@ export class OrderManageModule extends BaseModule {
     this.registerCommand({
       name: 'manage.order.ban-all',
       desc: '全体禁言',
-      permNode: 'manage.order.ban-all',
+      permNode: 'ban-all',
       permDesc: '开启全体禁言',
       usage: '开启全群禁言模式'
     })
@@ -270,14 +282,16 @@ export class OrderManageModule extends BaseModule {
     this.registerCommand({
       name: 'manage.order.unban-all',
       desc: '解除全体禁言',
-      permNode: 'manage.order.unban-all',
+      permNode: 'unban-all',
       permDesc: '解除全体禁言',
       usage: '关闭全群禁言模式'
     })
       .alias('unban-all')
       .alias('unbanall')
       .alias('解除全体禁言')
-      .alias('解全禁')
+      .alias('取消全体禁言')
+      .alias('解除全禁')
+      .alias('取消全禁')
       .action(async ({ session }) => {
         try {
           await session.bot.internal.setGroupWholeBan(session.guildId, false)
@@ -297,7 +311,7 @@ export class OrderManageModule extends BaseModule {
     this.registerCommand({
       name: 'manage.order.ban-list',
       desc: '查询当前禁言名单',
-      permNode: 'manage.order.ban-list',
+      permNode: 'ban-list',
       permDesc: '查询禁言名单',
       usage: '显示当前群内所有被禁言的成员'
     })
@@ -339,15 +353,18 @@ export class OrderManageModule extends BaseModule {
       name: 'manage.order.unban-random',
       desc: '随机解除若干人禁言',
       args: '<count:number>',
-      permNode: 'manage.order.unban-random',
+      permNode: 'unban-random',
       permDesc: '随机解除禁言',
       usage: '从当前禁言名单中随机解除指定数量的禁言',
       examples: ['unban-random 3']
     })
       .alias('unban-random')
       .alias('unbanrandom')
+      .alias('随机取消禁言')
       .alias('随机解除禁言')
+      .alias('随机取禁')
       .alias('随机解禁')
+      .alias('随机赦免')
       .action(async ({ session }, count) => {
         if (!session.guildId) return '喵呜...这个命令只能在群里用喵~'
         count = count || 1
@@ -368,18 +385,34 @@ export class OrderManageModule extends BaseModule {
           return '当前没有被禁言的成员喵~'
         }
 
-        const unbanList = this.getRandomElements(banList, count)
+        const candidates = this.getRandomElements(banList, count)
 
-        for (const userId of unbanList) {
-          await session.bot.muteGuildMember(session.guildId, userId, 0)
-          currentMutes[userId].startTime = Date.now()
-          currentMutes[userId].duration = 0
+        // 逐个捕获：名单里只要有一人已退群，整个 action 就会中断，
+        // 而此前已成功解禁的人在 mutes.json 里仍是禁言状态，记录与实际不符
+        const unbanList: string[] = []
+        const failedList: string[] = []
+        for (const userId of candidates) {
+          try {
+            await session.bot.muteGuildMember(session.guildId, userId, 0)
+            currentMutes[userId].startTime = Date.now()
+            currentMutes[userId].duration = 0
+            unbanList.push(userId)
+          } catch (e) {
+            failedList.push(userId)
+          }
         }
 
         mutes[session.guildId] = currentMutes
         this.data.mutes.setAll(mutes)
-        this.logCommand(session, 'unban-random', session.guildId, `成功：已随机解除 ${unbanList.length} 人的禁言，解除名单：${unbanList.join(', ')}`)
-        return `已随机解除 ${unbanList.length} 人的禁言喵~\n解除名单：\n${unbanList.join(', ')}`
+        this.logCommand(
+          session,
+          'unban-random',
+          session.guildId,
+          `成功：已随机解除 ${unbanList.length} 人的禁言，解除名单：${unbanList.join(', ')}` +
+          (failedList.length ? `；失败 ${failedList.length} 人：${failedList.join(', ')}` : '')
+        )
+        const failedText = failedList.length ? `\n失败 ${failedList.length} 人：${failedList.join(', ')}` : ''
+        return `已随机解除 ${unbanList.length} 人的禁言喵~\n解除名单：\n${unbanList.join(', ')}${failedText}`
       })
   }
 
@@ -392,15 +425,18 @@ export class OrderManageModule extends BaseModule {
       name: 'manage.order.unban-batch',
       desc: '批量解除禁言',
       args: '<num:string>',
-      permNode: 'manage.order.unban-batch',
+      permNode: 'unban-batch',
       permDesc: '批量解除禁言',
       usage: '一次性解除多个用户的禁言，按照每个用户已经禁言的百分比来解除',
       examples: ['unban-batch 5']
     })
       .alias('unban-batch')
       .alias('unbanbatch')
+      .alias('批量取消禁言')
       .alias('批量解除禁言')
+      .alias('批量取禁')
       .alias('批量解禁')
+      .alias('批量赦免')
       .action(async ({ session }, num) => {
         if (!session.guildId) return '喵呜...这个命令只能在群里用喵~'
         if (!num) return '请提供要解除禁言的用户数量，格式：unban-batch <数量>'
@@ -431,18 +467,33 @@ export class OrderManageModule extends BaseModule {
           return aRemaining / aData.duration - bRemaining / bData.duration
         })
 
-        const unbanList = sortedBanList.slice(0, count)
+        const candidates = sortedBanList.slice(0, count)
 
-        for (const userId of unbanList) {
-          await session.bot.muteGuildMember(session.guildId, userId, 0)
-          currentMutes[userId].startTime = Date.now()
-          currentMutes[userId].duration = 0
+        // 同 unban-random：逐个捕获，避免一人失败导致其余记录与实际状态脱节
+        const unbanList: string[] = []
+        const failedList: string[] = []
+        for (const userId of candidates) {
+          try {
+            await session.bot.muteGuildMember(session.guildId, userId, 0)
+            currentMutes[userId].startTime = Date.now()
+            currentMutes[userId].duration = 0
+            unbanList.push(userId)
+          } catch (e) {
+            failedList.push(userId)
+          }
         }
 
         mutes[session.guildId] = currentMutes
         this.data.mutes.setAll(mutes)
-        this.logCommand(session, 'unban-batch', session.guildId, `成功：已批量解除 ${unbanList.length} 人的禁言，解除名单：${unbanList.join(', ')}`)
-        return `已批量解除 ${unbanList.length} 人的禁言喵~\n解除名单：\n${unbanList.join(', ')}`
+        this.logCommand(
+          session,
+          'unban-batch',
+          session.guildId,
+          `成功：已批量解除 ${unbanList.length} 人的禁言，解除名单：${unbanList.join(', ')}` +
+          (failedList.length ? `；失败 ${failedList.length} 人：${failedList.join(', ')}` : '')
+        )
+        const failedText = failedList.length ? `\n失败 ${failedList.length} 人：${failedList.join(', ')}` : ''
+        return `已批量解除 ${unbanList.length} 人的禁言喵~\n解除名单：\n${unbanList.join(', ')}${failedText}`
       })
   }
 
@@ -451,30 +502,44 @@ export class OrderManageModule extends BaseModule {
    */
   private registerNicknameCommand(): void {
     this.registerCommand({
-      name: 'manage.order.nickname',
+      name: 'manage.member.nickname',
       desc: '设置用户昵称',
-      args: '<user:user> <nickname:string> <group:string>',
-      permNode: 'manage.order.nickname',
+      // nickname 与 group 必须是可选参数：都标成必选时，
+      // 文档里的 `nickname @用户 小猫咪` 会因缺参被直接拒绝，
+      // 而"不填昵称即清除"的分支永远走不到
+      args: '<user:user> [nickname:string] [group:string]',
+      permNode: 'nickname',
       permDesc: '设置群成员昵称',
       usage: '设置指定用户的群名片，不填昵称则清除',
       examples: ['nickname @用户 小猫咪']
     })
       .alias('nickname')
       .alias('设置昵称')
-      .alias('改名')
+      .alias('设置群名片')
+      .alias('设置群昵称')
+      .alias('设置群名称')
       .example('nickname 123456789 小猫咪')
       .action(async ({ session }, user, nickname, group) => {
         if (!user) return '喵呜...请指定用户喵~'
 
-        const userId = String(user).split(':')[1]
+        const userId = parseUserId(user)
+        if (!userId) return '喵呜...请输入正确的用户（@或QQ号）'
+
+        const targetGroup = group || session.guildId
+        const scopeError = this.checkGuildScope(session, 'nickname', targetGroup)
+        if (scopeError) {
+          this.logCommand(session, 'nickname', userId, `失败：越权操作群 ${targetGroup}`, false)
+          return scopeError
+        }
+
         try {
           if (nickname) {
-            await session.bot.internal.setGroupCard(group || session.guildId, userId, nickname)
-            this.logCommand(session, 'nickname', userId, `成功：已设置昵称为 ${nickname}, 群号 ${group || session.guildId}`)
+            await session.bot.internal.setGroupCard(targetGroup, userId, nickname)
+            this.logCommand(session, 'nickname', userId, `成功：已设置昵称为 ${nickname}, 群号 ${targetGroup}`)
             return `已将 ${userId} 的昵称设置为 "${nickname}" 喵~`
           } else {
-            await session.bot.internal.setGroupCard(group || session.guildId, userId)
-            this.logCommand(session, 'nickname', userId, `成功：已清除昵称, 群号 ${group || session.guildId}`)
+            await session.bot.internal.setGroupCard(targetGroup, userId)
+            this.logCommand(session, 'nickname', userId, `成功：已清除昵称, 群号 ${targetGroup}`)
             return `已将 ${userId} 的昵称清除喵~`
           }
         } catch (e) {
@@ -485,21 +550,6 @@ export class OrderManageModule extends BaseModule {
   }
 
   // ===== 辅助方法 =====
-
-  /**
-   * 记录禁言
-   */
-  private recordMute(guildId: string, userId: string, duration: number): void {
-    const mutes = this.data.mutes.getAll()
-    if (!mutes[guildId]) {
-      mutes[guildId] = {}
-    }
-    mutes[guildId][userId] = {
-      startTime: Date.now(),
-      duration
-    }
-    this.data.mutes.setAll(mutes)
-  }
 
   /**
    * 获取随机元素
