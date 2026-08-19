@@ -44,9 +44,6 @@ export class AIModule extends BaseModule {
     // 注册命令
     this.registerCommands()
 
-    // 注册中间件
-    this.registerMiddleware()
-
     this.data.writeLog('[ai] Module initialized')
   }
 
@@ -590,51 +587,5 @@ export class AIModule extends BaseModule {
           `翻译提示词: ${openaiConfig?.translatePrompt || '跟随全局'}`
         ].join('\n')
       })
-  }
-
-  /**
-   * 注册中间件 - @机器人触发AI对话
-   */
-  private registerMiddleware(): void {
-    this.ctx.middleware(async (session, next) => {
-      // 检查是否@了机器人
-      if (!session.elements?.some(el => el.type === 'at' && el.attrs?.id === session.selfId) ||
-        session.content?.startsWith('/')) {
-        return next()
-      }
-
-      // 检查功能是否启用：全局总开关 + 全局对话子开关
-      // 任何一级禁用时静默放行，把 @ 消息让给 chatluna 等其他插件处理
-      if (!this.config.openai?.enabled || this.config.openai?.chatEnabled === false) {
-        return next()
-      }
-
-      // 群级开关：群禁用 AI 或禁用对话时同样静默放行
-      if (session.guildId) {
-        const groupOpenai = this.getGroupConfig(session.guildId)?.openai
-        if (groupOpenai?.enabled === false || groupOpenai?.chatEnabled === false) {
-          return next()
-        }
-      }
-
-      try {
-        // 移除@提及
-        const content = session.content
-          ?.replace(new RegExp(`<at id="${session.selfId}"/>`, 'g'), '')
-          .replace(new RegExp(`@${session.selfId}`, 'g'), '')
-          .trim()
-
-        if (!content) {
-          return next()
-        }
-
-        const response = await this.processMessage(session.userId, content, session.guildId)
-
-        return `${h.quote(session.messageId)}${h.at(session.userId)} ${response}`
-      } catch (error) {
-        this.data.writeLog(`[ai] AI中间件处理失败: ${error}`)
-        return next()
-      }
-    })
   }
 }
