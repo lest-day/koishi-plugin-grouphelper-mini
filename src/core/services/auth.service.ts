@@ -85,8 +85,9 @@ export class AuthService {
   }
 
   private isGuildInScope(scope: AuthScope, guildId?: string): boolean {
-    if (!guildId) return false
+    // 全局作用域不依赖群上下文（私聊同样生效），必须先于 guildId 判空
     if (scope.type === 'global') return true
+    if (!guildId) return false
     if (scope.type === 'guilds') {
       return (scope.guildIds || []).includes(guildId)
     }

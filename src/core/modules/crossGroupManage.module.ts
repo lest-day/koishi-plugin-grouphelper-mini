@@ -41,7 +41,7 @@ export class CrossGroupManageModule extends BaseModule {
       .action(async ({ session }, groupId) => {
         if (!groupId) return '喵呜...请指定要退出的群聊ID喵~'
 
-        const scopeError = this.checkGuildScope(session, 'quit-group', groupId)
+        const scopeError = this.checkGuildScope(session, 'grouphelper.quit-group', groupId)
         if (scopeError) {
           this.logCommand(session, 'quit-group', groupId, `失败：越权操作群 ${groupId}`, false)
           return scopeError
@@ -78,7 +78,7 @@ export class CrossGroupManageModule extends BaseModule {
         if (!session.quote) return '喵喵！请回复要发送的消息呀~'
         if (!groupId) return '喵呜...请指定目标群号喵~'
 
-        const scopeError = this.checkGuildScope(session, 'send', groupId)
+        const scopeError = this.checkGuildScope(session, 'grouphelper.send', groupId)
         if (scopeError) {
           this.logCommand(session, 'send', groupId, `失败：越权操作群 ${groupId}`, false)
           return scopeError

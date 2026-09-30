@@ -150,7 +150,7 @@ sub status - 查看订阅状态`
 
         // 防撤回推送会带出被撤回消息的原文，因此来源群必须在订阅者的权限范围内，
         // 否则任何人都能把无关群的撤回内容拉到自己的群里
-        const denied = guildIds.filter(id => this.checkGuildScope(session, 'sub-antirecall', id))
+        const denied = guildIds.filter(id => this.checkGuildScope(session, 'sub.antirecall', id))
         if (denied.length) {
           return `你没有权限接收这些群的撤回消息喵：${denied.join('、')}`
         }
