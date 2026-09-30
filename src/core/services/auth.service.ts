@@ -661,22 +661,22 @@ export class AuthService {
    * 检查用户是否为群管理员或群主
    */
   private checkGuildAdmin(session: Session): boolean {
-    // Koishi session 中的 author 信息
-    const author = session.author || (session.event as any)?.member
-    if (!author) return false
-    
-    // 检查 roles 字段（通常包含 'admin', 'owner' 等）
-    const roles = author.roles || []
-    if (roles.includes('admin') || roles.includes('owner')) {
+    // 成员身份在 event.member 上（session.author 是 user+member 的合并对象，同样带这些字段）
+    const member: any = (session.event as any)?.member || session.author
+    if (!member) return false
+
+    // roles 条目在不同适配器/协议版本下可能是字符串，也可能是 { id } 对象（satori 新协议），
+    // 统一取出 id 再比较——否则 OneBot 适配器下 roles 为 [{id:'admin'}]，字符串比较永远为 false
+    const roleIds = (member.roles || []).map((r: any) => typeof r === 'string' ? r : r?.id)
+    if (roleIds.includes('admin') || roleIds.includes('owner')) {
       return true
     }
-    
-    // OneBot 协议：检查 role 字段
-    const role = (author as any).role
-    if (role === 'admin' || role === 'owner') {
+
+    // 旧协议/部分适配器把身份放在单数 role 字段
+    if (member.role === 'admin' || member.role === 'owner') {
       return true
     }
-    
+
     return false
   }
 

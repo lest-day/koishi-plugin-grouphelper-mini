@@ -236,11 +236,11 @@ export function registerAuthAPI(
             next = result.next
           } while (next)
 
-          // 筛选管理员和群主
+          // 筛选管理员和群主；roles 条目可能是字符串也可能是 { id } 对象（satori 新协议），统一取 id 比较
           const admins = members.filter(member => {
-            const roles = member.roles || []
+            const roleIds = (member.roles || []).map((r: any) => typeof r === 'string' ? r : r?.id)
             const role = (member as any).role
-            return roles.includes('admin') || roles.includes('owner') || role === 'admin' || role === 'owner'
+            return roleIds.includes('admin') || roleIds.includes('owner') || role === 'admin' || role === 'owner'
           })
 
           // 格式化返回
